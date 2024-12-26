@@ -13,6 +13,13 @@ Join our community: [Telegram](https://t.me/AIhawkCommunity) (for Normal users)
 [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/AIhawkCommunity)
 
 
+
+# Important Notice
+Currently, the script only generates a custom resume for you based on a job description.
+
+LinkedIn connected with some of our team members, and asked us to remove all the auto-job-applier functions for the LinkedIn Platform. They blocked most of the contributors' accounts. In the future, we will consider to support for other platforms. It's very unfortunate that this used to be a great tool, but for the sake of others contributors to this project, we had to wipe out LinkedIn parts right now.
+
+#
 </div>
 
 **Creator** [feder-cr](https://github.com/feder-cr), Co-Founder of AIHawk </br>
