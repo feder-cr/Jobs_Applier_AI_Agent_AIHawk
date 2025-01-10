@@ -31,7 +31,11 @@ def chrome_browser_options():
     options.add_argument("--incognito")
     options.add_argument("--allow-file-access-from-files")  # Consente l'accesso ai file locali
     options.add_argument("--disable-web-security")         # Disabilita la sicurezza web
-    logger.debug("Using Chrome in incognito mode")
+    # Add user profile directory options
+    options.add_argument("--user-data-dir=/path to your chrome profile")
+    options.add_argument("--profile-directory=your profile name")
+
+    logger.debug("Using specified Chrome user")
     
     return options
 
