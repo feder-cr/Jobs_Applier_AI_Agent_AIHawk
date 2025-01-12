@@ -73,6 +73,8 @@ from src.utils.constants import (
 from src.job import Job
 from src.logging import logger
 import config as cfg
+from src.config.selectors_linkedin import LINKEDIN_SELECTORS
+from src.config.selectors_easy_apply import EASY_APPLY_SELECTORS
 
 load_dotenv()
 
