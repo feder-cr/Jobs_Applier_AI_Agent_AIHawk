@@ -104,9 +104,9 @@ opportunities.
 3. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/code-infected/Auto_Jobs_Applier_AI_Agent.git
+   git clone https://github.com/feder-cr/Jobs_Applier_AI_Agent.git
 
-   cd Auto_Jobs_Applier_AI_Agent
+   cd Jobs_Applier_AI_Agent
    ```
 
 4. **Activate virtual environment:**
