@@ -579,6 +579,7 @@ Auto_Jobs_Applier_AIHawk provides a significant advantage in the modern job mark
 
 If you like the project please star ⭐ the repository!
 
+<a id="contributors"></a>
 ## Special Thanks
 [![Contributors](https://img.shields.io/github/contributors/feder-cr/Auto_Jobs_Applier_AIHawk)](https://github.com/feder-cr/Auto_Jobs_Applier_AIHawk/graphs/contributors)
 
