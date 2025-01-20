@@ -96,6 +96,7 @@ In the digital age, the job search landscape has undergone a dramatic transforma
    or for Windows-based machines -
 
    ```bash
+   python -m venv virtual
    .\virtual\Scripts\activate
    ```
 
