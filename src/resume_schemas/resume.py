@@ -115,7 +115,12 @@ class Resume(BaseModel):
                         ed['exam'] = self.normalize_exam_format(ed['exam'])
 
             # Create an instance of Resume from the parsed data
-            super().__init__(**data)
+            try:
+                super().__init__(**data)
+            except Exception as e:
+                print(f"Error in super call: {e}")
+                raise
+
         except yaml.YAMLError as e:
             raise ValueError("Error parsing YAML file.") from e
         except Exception as e:
