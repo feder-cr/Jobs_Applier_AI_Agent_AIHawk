@@ -35,6 +35,23 @@ def chrome_browser_options():
     
     return options
 
+def get_chromedriver_path():
+    """
+    Get the path to the ChromeDriver executable.
+    This function uses webdriver_manager to manage ChromeDriver installation.
+    
+    Returns:
+        str: Path to the ChromeDriver executable
+    """
+    try:
+        # Get the path to the ChromeDriver executable
+        driver_path = ChromeDriverManager().install()
+        logger.debug(f"ChromeDriver path: {driver_path}")
+        return driver_path
+    except Exception as e:
+        logger.error(f"Failed to get ChromeDriver path: {str(e)}")
+        raise RuntimeError(f"Failed to get ChromeDriver path: {str(e)}")
+
 def init_browser() -> webdriver.Chrome:
     try:
         options = chrome_browser_options()
@@ -46,7 +63,46 @@ def init_browser() -> webdriver.Chrome:
         logger.error(f"Failed to initialize browser: {str(e)}")
         raise RuntimeError(f"Failed to initialize browser: {str(e)}")
 
-
+def get_job_description(driver, job_url):
+    """
+    Extract job description from a job posting URL.
+    
+    Args:
+        driver (webdriver.Chrome): Initialized Chrome WebDriver
+        job_url (str): URL of the job posting
+        
+    Returns:
+        str: Extracted job description text
+    """
+    try:
+        logger.info(f"Accessing job URL: {job_url}")
+        driver.get(job_url)
+        driver.implicitly_wait(10)
+        
+        # First try to find elements that commonly contain job descriptions
+        potential_elements = driver.find_elements("css selector", ".job-description, .description, article, .details, .job-details, .posting-content, main")
+        
+        # If we found potential elements, use the one with the most text
+        if potential_elements:
+            max_text = ""
+            for element in potential_elements:
+                text = element.text.strip()
+                if len(text) > len(max_text):
+                    max_text = text
+            
+            if max_text:
+                logger.info("Job description extracted successfully.")
+                return max_text
+        
+        # Fallback: get the entire body text if specific elements weren't found or had no content
+        body_element = driver.find_element("tag name", "body")
+        text = body_element.text.strip()
+        logger.info("Extracted job description from page body.")
+        return text
+    except Exception as e:
+        logger.error(f"Error extracting job description: {str(e)}")
+        logger.info("Returning empty job description due to error.")
+        return ""
 
 def HTML_to_PDF(html_content, driver):
     """

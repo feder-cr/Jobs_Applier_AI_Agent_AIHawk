@@ -1,6 +1,4 @@
 __version__ = '0.1'
 
 # Import all the necessary classes and functions, called when the package is imported
-from .resume_generator import ResumeGenerator
-from .style_manager import StyleManager
-from .resume_facade import ResumeFacade
+from src.libs.resume_and_cover_builder.resume_facade import ResumeFacade, StyleManager, ResumeGenerator

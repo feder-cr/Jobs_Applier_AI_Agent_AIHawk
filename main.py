@@ -3,6 +3,8 @@ import sys
 from pathlib import Path
 import traceback
 from typing import List, Optional, Tuple, Dict
+import requests
+import json
 
 import click
 import inquirer
@@ -166,19 +168,22 @@ class ConfigValidator:
                 parameters[blacklist] = []
 
     @staticmethod
-    def validate_secrets(secrets_yaml_path: Path) -> str:
-        """Validate the secrets YAML file and retrieve the LLM API key."""
+    def validate_secrets(secrets_yaml_path: Path) -> Tuple[str, str]:
+        """Validate the secrets YAML file and retrieve the API keys."""
         secrets = ConfigValidator.load_yaml(secrets_yaml_path)
-        mandatory_secrets = ["llm_api_key"]
-
-        for secret in mandatory_secrets:
-            if secret not in secrets:
-                raise ConfigError(f"Missing secret '{secret}' in {secrets_yaml_path}")
-
-            if not secrets[secret]:
-                raise ConfigError(f"Secret '{secret}' cannot be empty in {secrets_yaml_path}")
-
-        return secrets["llm_api_key"]
+        
+        # Check for either OpenAI API key or DeepSeek API key
+        if "llm_api_key" not in secrets and "deepsekk_api_key" not in secrets:
+            raise ConfigError(f"Missing either 'llm_api_key' or 'deepsekk_api_key' in {secrets_yaml_path}")
+            
+        llm_api_key = secrets.get("llm_api_key", "")
+        deepseek_api_key = secrets.get("deepsekk_api_key", "")
+        
+        # At least one API key should be non-empty
+        if not llm_api_key and not deepseek_api_key:
+            raise ConfigError(f"At least one API key ('llm_api_key' or 'deepsekk_api_key') must be provided in {secrets_yaml_path}")
+            
+        return llm_api_key, deepseek_api_key
 
 
 class FileManager:
@@ -217,7 +222,53 @@ class FileManager:
         return uploads
 
 
-def create_cover_letter(parameters: dict, llm_api_key: str):
+def deepseek_completion(api_key: str, prompt: str, model: str = "deepseek/deepseek-r1:free"):
+    """
+    Make a completion request to the DeepSeek model through OpenRouter API.
+    
+    Args:
+        api_key: OpenRouter API key
+        prompt: The prompt to send to the model
+        model: The model to use, defaults to free DeepSeek-R1
+        
+    Returns:
+        The generated completion text
+    """
+    try:
+        response = requests.post(
+            url="https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": "https://jobs-applier-ai-agent.com",
+                "X-Title": "Jobs Applier AI Agent",
+            },
+            data=json.dumps({
+                "model": model,
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+            })
+        )
+        
+        response.raise_for_status()  # Raise an exception for 4XX/5XX responses
+        result = response.json()
+        
+        if "choices" in result and len(result["choices"]) > 0:
+            return result["choices"][0]["message"]["content"]
+        else:
+            logger.error(f"Unexpected response format from OpenRouter: {result}")
+            raise Exception("Unexpected response format from OpenRouter")
+            
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error making request to OpenRouter: {e}")
+        raise Exception(f"Error making request to OpenRouter: {e}")
+
+
+def create_cover_letter(parameters: dict, llm_api_key: str, deepseek_api_key: str):
     """
     Logic to create a CV.
     """
@@ -253,24 +304,60 @@ def create_cover_letter(parameters: dict, llm_api_key: str):
                         break
             else:
                 logger.warning("No style selected. Proceeding with default style.")
+                
+        # Ask user how they want to provide the job description
         questions = [
-    inquirer.Text('job_url', message="Please enter the URL of the job description:")
+            inquirer.List(
+                'input_method',
+                message="How would you like to provide the job description?",
+                choices=[
+                    "Enter job posting URL",
+                    "Enter job description manually"
+                ],
+            )
         ]
-        answers = inquirer.prompt(questions)
-        job_url = answers.get('job_url')
+        input_method = inquirer.prompt(questions).get('input_method')
+        
+        job_url = None
+        manual_job_description = None
+        
+        if input_method == "Enter job posting URL":
+            questions = [
+                inquirer.Text('job_url', message="Please enter the URL of the job description:")
+            ]
+            answers = inquirer.prompt(questions)
+            job_url = answers.get('job_url')
+        else:
+            questions = [
+                inquirer.Text('job_description', message="Please enter the job description:")
+            ]
+            answers = inquirer.prompt(questions)
+            manual_job_description = answers.get('job_description')
+        
         resume_generator = ResumeGenerator()
         resume_object = Resume(plain_text_resume)
         driver = init_browser()
         resume_generator.set_resume_object(resume_object)
+        
+        # Use DeepSeek API if available, otherwise fallback to OpenAI
+        api_key_to_use = deepseek_api_key if deepseek_api_key else llm_api_key
+        use_deepseek = bool(deepseek_api_key)
+        
         resume_facade = ResumeFacade(            
-            api_key=llm_api_key,
+            api_key=api_key_to_use,
             style_manager=style_manager,
             resume_generator=resume_generator,
             resume_object=resume_object,
             output_path=Path("data_folder/output"),
+            use_deepseek=use_deepseek
         )
         resume_facade.set_driver(driver)
-        resume_facade.link_to_job(job_url)
+        
+        if job_url:
+            resume_facade.link_to_job(job_url)
+        elif manual_job_description:
+            resume_facade.set_manual_job_description(manual_job_description)
+            
         result_base64, suggested_name = resume_facade.create_cover_letter()         
 
         # Decodifica Base64 in dati binari
@@ -296,15 +383,17 @@ def create_cover_letter(parameters: dict, llm_api_key: str):
             with open(output_path, "wb") as file:
                 file.write(pdf_data)
             logger.info(f"CV salvato in: {output_path}")
+            print(f"\nCover letter successfully generated and saved at: {output_path}")
         except IOError as e:
             logger.error("Error writing file: %s", e)
             raise
     except Exception as e:
         logger.exception(f"An error occurred while creating the CV: {e}")
+        print(f"\nERROR: Failed to generate cover letter: {e}")
         raise
 
 
-def create_resume_pdf_job_tailored(parameters: dict, llm_api_key: str):
+def create_resume_pdf_job_tailored(parameters: dict, llm_api_key: str, deepseek_api_key: str):
     """
     Logic to create a CV.
     """
@@ -340,22 +429,60 @@ def create_resume_pdf_job_tailored(parameters: dict, llm_api_key: str):
                         break
             else:
                 logger.warning("No style selected. Proceeding with default style.")
-        questions = [inquirer.Text('job_url', message="Please enter the URL of the job description:")]
-        answers = inquirer.prompt(questions)
-        job_url = answers.get('job_url')
+                
+        # Ask user how they want to provide the job description
+        questions = [
+            inquirer.List(
+                'input_method',
+                message="How would you like to provide the job description?",
+                choices=[
+                    "Enter job posting URL",
+                    "Enter job description manually"
+                ],
+            )
+        ]
+        input_method = inquirer.prompt(questions).get('input_method')
+        
+        job_url = None
+        manual_job_description = None
+        
+        if input_method == "Enter job posting URL":
+            questions = [
+                inquirer.Text('job_url', message="Please enter the URL of the job description:")
+            ]
+            answers = inquirer.prompt(questions)
+            job_url = answers.get('job_url')
+        else:
+            questions = [
+                inquirer.Text('job_description', message="Please enter the job description:")
+            ]
+            answers = inquirer.prompt(questions)
+            manual_job_description = answers.get('job_description')
+            
         resume_generator = ResumeGenerator()
         resume_object = Resume(plain_text_resume)
         driver = init_browser()
         resume_generator.set_resume_object(resume_object)
+        
+        # Use DeepSeek API if available, otherwise fallback to OpenAI
+        api_key_to_use = deepseek_api_key if deepseek_api_key else llm_api_key
+        use_deepseek = bool(deepseek_api_key)
+        
         resume_facade = ResumeFacade(            
-            api_key=llm_api_key,
+            api_key=api_key_to_use,
             style_manager=style_manager,
             resume_generator=resume_generator,
             resume_object=resume_object,
             output_path=Path("data_folder/output"),
+            use_deepseek=use_deepseek
         )
         resume_facade.set_driver(driver)
-        resume_facade.link_to_job(job_url)
+        
+        if job_url:
+            resume_facade.link_to_job(job_url)
+        elif manual_job_description:
+            resume_facade.set_manual_job_description(manual_job_description)
+            
         result_base64, suggested_name = resume_facade.create_resume_pdf_job_tailored()         
 
         # Decodifica Base64 in dati binari
@@ -381,15 +508,17 @@ def create_resume_pdf_job_tailored(parameters: dict, llm_api_key: str):
             with open(output_path, "wb") as file:
                 file.write(pdf_data)
             logger.info(f"CV salvato in: {output_path}")
+            print(f"\nTailored resume successfully generated and saved at: {output_path}")
         except IOError as e:
             logger.error("Error writing file: %s", e)
             raise
     except Exception as e:
         logger.exception(f"An error occurred while creating the CV: {e}")
+        print(f"\nERROR: Failed to generate tailored resume: {e}")
         raise
 
 
-def create_resume_pdf(parameters: dict, llm_api_key: str):
+def create_resume_pdf(parameters: dict, llm_api_key: str, deepseek_api_key: str):
     """
     Logic to create a CV.
     """
@@ -399,6 +528,7 @@ def create_resume_pdf(parameters: dict, llm_api_key: str):
         # Load the plain text resume
         with open(parameters["uploads"]["plainTextResume"], "r", encoding="utf-8") as file:
             plain_text_resume = file.read()
+        logger.info("Plain text resume loaded successfully.")
 
         # Initialize StyleManager
         style_manager = StyleManager()
@@ -428,67 +558,86 @@ def create_resume_pdf(parameters: dict, llm_api_key: str):
                 logger.warning("No style selected. Proceeding with default style.")
 
         # Initialize the Resume Generator
+        logger.info("Initializing resume generator...")
         resume_generator = ResumeGenerator()
         resume_object = Resume(plain_text_resume)
+        logger.info("Initializing browser...")
         driver = init_browser()
+        logger.info("Browser initialized successfully.")
         resume_generator.set_resume_object(resume_object)
 
+        # Use DeepSeek API if available, otherwise fallback to OpenAI
+        api_key_to_use = deepseek_api_key if deepseek_api_key else llm_api_key
+        use_deepseek = bool(deepseek_api_key)
+        logger.info(f"Using {'DeepSeek API' if use_deepseek else 'OpenAI API'}")
+        
         # Create the ResumeFacade
+        logger.info("Creating ResumeFacade with API key...")
         resume_facade = ResumeFacade(
-            api_key=llm_api_key,
+            api_key=api_key_to_use,
             style_manager=style_manager,
             resume_generator=resume_generator,
             resume_object=resume_object,
             output_path=Path("data_folder/output"),
+            use_deepseek=use_deepseek
         )
         resume_facade.set_driver(driver)
+        logger.info("Generating resume PDF...")
         result_base64 = resume_facade.create_resume_pdf()
+        logger.info("Resume PDF generated successfully.")
 
         # Decode Base64 to binary data
         try:
+            logger.info("Decoding Base64 data...")
             pdf_data = base64.b64decode(result_base64)
+            logger.info("Base64 data decoded successfully.")
         except base64.binascii.Error as e:
             logger.error("Error decoding Base64: %s", e)
             raise
 
         # Define the output directory using `suggested_name`
         output_dir = Path(parameters["outputFileDirectory"])
+        logger.info(f"Output directory: {output_dir}")
 
         # Write the PDF file
         output_path = output_dir / "resume_base.pdf"
         try:
+            logger.info(f"Writing PDF to {output_path}...")
             with open(output_path, "wb") as file:
                 file.write(pdf_data)
             logger.info(f"Resume saved at: {output_path}")
+            print(f"\nResume successfully generated and saved at: {output_path}")
         except IOError as e:
             logger.error("Error writing file: %s", e)
             raise
     except Exception as e:
         logger.exception(f"An error occurred while creating the CV: {e}")
+        print(f"\nERROR: Failed to generate resume: {e}")
         raise
 
         
-def handle_inquiries(selected_actions: List[str], parameters: dict, llm_api_key: str):
+def handle_inquiries(selected_actions: List[str], parameters: dict, llm_api_key: str, deepseek_api_key: str):
     """
     Decide which function to call based on the selected user actions.
 
     :param selected_actions: List of actions selected by the user.
     :param parameters: Configuration parameters dictionary.
     :param llm_api_key: API key for the language model.
+    :param deepseek_api_key: API key for DeepSeek on OpenRouter.
     """
     try:
         if selected_actions:
             if "Generate Resume" == selected_actions:
                 logger.info("Crafting a standout professional resume...")
-                create_resume_pdf(parameters, llm_api_key)
+                create_resume_pdf(parameters, llm_api_key, deepseek_api_key)
                 
             if "Generate Resume Tailored for Job Description" == selected_actions:
                 logger.info("Customizing your resume to enhance your job application...")
-                create_resume_pdf_job_tailored(parameters, llm_api_key)
+                create_resume_pdf_job_tailored(parameters, llm_api_key, deepseek_api_key)
                 
             if "Generate Tailored Cover Letter for Job Description" == selected_actions:
                 logger.info("Designing a personalized cover letter to enhance your job application...")
-                create_cover_letter(parameters, llm_api_key)
+                create_cover_letter(parameters, llm_api_key, deepseek_api_key)
 
         else:
             logger.warning("No actions selected. Nothing to execute.")
@@ -529,11 +678,24 @@ def main():
     try:
         # Define and validate the data folder
         data_folder = Path("data_folder")
+        print("Validating required files...")
         secrets_file, config_file, plain_text_resume_file, output_folder = FileManager.validate_data_folder(data_folder)
+        print("Required files validated successfully.")
 
         # Validate configuration and secrets
+        print("Validating configuration...")
         config = ConfigValidator.validate_config(config_file)
-        llm_api_key = ConfigValidator.validate_secrets(secrets_file)
+        llm_api_key, deepseek_api_key = ConfigValidator.validate_secrets(secrets_file)
+        
+        # Show which API will be used
+        if deepseek_api_key:
+            print("DeepSeek API key found - will use OpenRouter with DeepSeek model")
+        elif llm_api_key:
+            print("OpenAI API key found - will use OpenAI API")
+        else:
+            print("WARNING: No API keys found. The application may not function correctly.")
+            
+        print("Configuration validated successfully.")
 
         # Prepare parameters
         config["uploads"] = FileManager.get_uploads(plain_text_resume_file)
@@ -542,23 +704,33 @@ def main():
         # Interactive prompt for user to select actions
         selected_actions = prompt_user_action()
 
-        # Handle selected actions and execute them
-        handle_inquiries(selected_actions, config, llm_api_key)
+        if selected_actions:
+            print(f"\nExecuting action: {selected_actions}...")
+            # Handle selected actions and execute them
+            handle_inquiries(selected_actions, config, llm_api_key, deepseek_api_key)
+            print("\nAction completed successfully!")
+        else:
+            print("No action selected. Exiting.")
 
     except ConfigError as ce:
         logger.error(f"Configuration error: {ce}")
-        logger.error(
+        print(f"\nCONFIGURATION ERROR: {ce}")
+        print(
             "Refer to the configuration guide for troubleshooting: "
             "https://github.com/feder-cr/Auto_Jobs_Applier_AIHawk?tab=readme-ov-file#configuration"
         )
     except FileNotFoundError as fnf:
         logger.error(f"File not found: {fnf}")
-        logger.error("Ensure all required files are present in the data folder.")
+        print(f"\nFILE ERROR: {fnf}")
+        print("Ensure all required files are present in the data folder.")
     except RuntimeError as re:
         logger.error(f"Runtime error: {re}")
+        print(f"\nRUNTIME ERROR: {re}")
         logger.debug(traceback.format_exc())
     except Exception as e:
         logger.exception(f"An unexpected error occurred: {e}")
+        print(f"\nUNEXPECTED ERROR: {e}")
+        print(f"Error details: {traceback.format_exc()}")
 
 
 if __name__ == "__main__":

@@ -121,6 +121,138 @@ class Resume(BaseModel):
         except Exception as e:
             raise Exception(f"Unexpected error while parsing YAML: {e}") from e
 
+    def to_text(self) -> str:
+        """
+        Convert the resume to a plain text format.
+        
+        Returns:
+            str: A plain text representation of the resume
+        """
+        lines = []
+        
+        # Personal Information
+        if self.personal_information:
+            personal_info = self.personal_information
+            name_parts = []
+            if hasattr(personal_info, 'first_name') and personal_info.first_name:
+                name_parts.append(personal_info.first_name)
+            if hasattr(personal_info, 'last_name') and personal_info.last_name:
+                name_parts.append(personal_info.last_name)
+            
+            if not name_parts and hasattr(personal_info, 'name') and personal_info.name:
+                name_parts.append(personal_info.name)
+                if hasattr(personal_info, 'surname') and personal_info.surname:
+                    name_parts.append(personal_info.surname)
+                    
+            if name_parts:
+                lines.append(' '.join(name_parts))
+            
+            contact_info = []
+            if hasattr(personal_info, 'email') and personal_info.email:
+                contact_info.append(f"Email: {personal_info.email}")
+            if hasattr(personal_info, 'phone') and personal_info.phone:
+                phone_str = personal_info.phone
+                if hasattr(personal_info, 'phone_prefix') and personal_info.phone_prefix:
+                    phone_str = f"{personal_info.phone_prefix} {phone_str}"
+                contact_info.append(f"Phone: {phone_str}")
+            if hasattr(personal_info, 'address') and personal_info.address:
+                contact_info.append(f"Address: {personal_info.address}")
+            if hasattr(personal_info, 'city') and personal_info.city:
+                city_country = personal_info.city
+                if hasattr(personal_info, 'country') and personal_info.country:
+                    city_country = f"{city_country}, {personal_info.country}"
+                contact_info.append(f"Location: {city_country}")
+            
+            if contact_info:
+                lines.extend(contact_info)
+                lines.append("")  # Add a blank line
+            
+            if hasattr(personal_info, 'summary') and personal_info.summary:
+                lines.append("SUMMARY")
+                lines.append(personal_info.summary)
+                lines.append("")
+        
+        # Education
+        if self.education_details:
+            lines.append("EDUCATION")
+            for edu in self.education_details:
+                if edu.institution:
+                    lines.append(edu.institution)
+                if edu.education_level:
+                    lines.append(f"{edu.education_level}{' in ' + edu.field_of_study if edu.field_of_study else ''}")
+                if edu.start_date or edu.year_of_completion:
+                    date_range = ""
+                    if edu.start_date:
+                        date_range += edu.start_date
+                    if edu.year_of_completion:
+                        date_range += f" - {edu.year_of_completion}"
+                    lines.append(date_range)
+                if edu.final_evaluation_grade:
+                    lines.append(f"Grade: {edu.final_evaluation_grade}")
+                lines.append("")
+        
+        # Experience
+        if self.experience_details:
+            lines.append("EXPERIENCE")
+            for exp in self.experience_details:
+                if exp.position and exp.company:
+                    lines.append(f"{exp.position} at {exp.company}")
+                elif exp.position:
+                    lines.append(exp.position)
+                elif exp.company:
+                    lines.append(exp.company)
+                    
+                if exp.employment_period:
+                    lines.append(exp.employment_period)
+                if exp.location:
+                    lines.append(f"Location: {exp.location}")
+                    
+                if exp.key_responsibilities:
+                    lines.append("Responsibilities:")
+                    for resp in exp.key_responsibilities:
+                        if isinstance(resp, dict) and 'description' in resp:
+                            lines.append(f"- {resp['description']}")
+                        elif isinstance(resp, str):
+                            lines.append(f"- {resp}")
+                
+                if exp.skills_acquired:
+                    lines.append("Skills:")
+                    for skill in exp.skills_acquired:
+                        lines.append(f"- {skill}")
+                        
+                lines.append("")
+        
+        # Projects
+        if self.projects:
+            lines.append("PROJECTS")
+            for project in self.projects:
+                if project.name:
+                    lines.append(project.name)
+                if project.description:
+                    lines.append(project.description)
+                if project.link:
+                    lines.append(f"Link: {project.link}")
+                lines.append("")
+        
+        # Languages
+        if self.languages:
+            lines.append("LANGUAGES")
+            for lang in self.languages:
+                if lang.language:
+                    lang_str = lang.language
+                    if lang.proficiency:
+                        lang_str += f" ({lang.proficiency})"
+                    lines.append(lang_str)
+            lines.append("")
+        
+        # Interests
+        if self.interests:
+            lines.append("INTERESTS")
+            for interest in self.interests:
+                lines.append(f"- {interest}")
+            lines.append("")
+            
+        return "\n".join(lines)
 
     def _process_personal_information(self, data: Dict[str, Any]) -> PersonalInformation:
         try:

@@ -86,3 +86,39 @@ class StyleManager:
         except Exception as e:
             logging.error(f"Error retrieving selected style: {e}")
             return None
+
+    def get_selected_style_content(self) -> str:
+        """
+        Get the content of the selected style file.
+        
+        Returns:
+            str: The CSS content of the selected style, or a default style if none is selected
+        """
+        try:
+            style_path = self.get_style_path()
+            if style_path and style_path.exists():
+                with open(style_path, "r", encoding="utf-8") as file:
+                    content = file.read()
+                logging.info(f"Successfully read style content from {style_path}")
+                return content
+            else:
+                # If no style is selected or the style file doesn't exist, return a default style
+                logging.warning("No style selected or style file doesn't exist. Using default style.")
+                return """
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 0;
+                    padding: 20px;
+                    color: #333;
+                }
+                h1, h2, h3 {
+                    color: #2c3e50;
+                }
+                .section {
+                    margin-bottom: 20px;
+                }
+                """
+        except Exception as e:
+            logging.error(f"Error reading style content: {e}")
+            # Return a minimal default style in case of error
+            return "body { font-family: Arial, sans-serif; }"

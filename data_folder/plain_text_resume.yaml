@@ -1,130 +1,120 @@
 personal_information:
-  name: "[Your Name]"
-  surname: "[Your Surname]"
-  date_of_birth: "[Your Date of Birth]"
-  country: "[Your Country]"
-  city: "[Your City]"
-  address: "[Your Address]"
-  zip_code: "[Your zip code]"
-  phone_prefix: "[Your Phone Prefix]"
-  phone: "[Your Phone Number]"
-  email: "[Your Email Address]"
-  github: "[Your GitHub Profile URL]"
-  linkedin: "[Your LinkedIn Profile URL]"
+  name: "John"
+  surname: "Doe"
+  date_of_birth: "1990-01-01"
+  country: "USA"
+  city: "New York"
+  phone_prefix: "+1"
+  first_name: "John"
+  last_name: "Doe"
+  phone: "123-456-7890"
+  email: "john.doe@example.com"
+  linkedin: "https://linkedin.com/in/johndoe"
+  github: "https://github.com/johndoe"
+  website: "https://johndoe.com"
+  address: "New York, NY"
+  summary: "Experienced software engineer with a passion for building innovative solutions."
 
 education_details:
-  - education_level: "[Your Education Level]"
-    institution: "[Your Institution]"
-    field_of_study: "[Your Field of Study]"
-    final_evaluation_grade: "[Your Final Evaluation Grade]"
-    start_date: "[Start Date]"
-    year_of_completion: "[Year of Completion]"
-    exam:
-      exam_name_1: "[Grade]"
-      exam_name_2: "[Grade]"
-      exam_name_3: "[Grade]"
-      exam_name_4: "[Grade]"
-      exam_name_5: "[Grade]"
-      exam_name_6: "[Grade]"
+  - education_level: "Bachelor's Degree"
+    institution: "New York University"
+    field_of_study: "Computer Science"
+    final_evaluation_grade: "3.8 GPA"
+    start_date: "2010-09"
+    year_of_completion: 2014
 
 experience_details:
-  - position: "[Your Position]"
-    company: "[Company Name]"
-    employment_period: "[Employment Period]"
-    location: "[Location]"
-    industry: "[Industry]"
+  - position: "Senior Software Engineer"
+    company: "Tech Solutions Inc."
+    employment_period: "2018-01 to Present"
+    location: "New York, NY"
+    industry: "Software Development"
     key_responsibilities:
-      - responsibility_1: "[Responsibility Description]"
-      - responsibility_2: "[Responsibility Description]"
-      - responsibility_3: "[Responsibility Description]"
+      - description: "Led development of cloud-based applications using modern frameworks"
+      - description: "Mentored junior developers and conducted code reviews"
+      - description: "Implemented CI/CD pipelines to streamline deployment processes"
     skills_acquired:
-      - "[Skill]"
-      - "[Skill]"
-      - "[Skill]"
-
-  - position: "[Your Position]"
-    company: "[Company Name]"
-    employment_period: "[Employment Period]"
-    location: "[Location]"
-    industry: "[Industry]"
+      - "React"
+      - "Node.js"
+      - "AWS"
+      - "Docker"
+  
+  - position: "Software Engineer"
+    company: "InnovateTech"
+    employment_period: "2014-07 to 2017-12"
+    location: "Boston, MA"
+    industry: "Financial Technology"
     key_responsibilities:
-      - responsibility_1: "[Responsibility Description]"
-      - responsibility_2: "[Responsibility Description]"
-      - responsibility_3: "[Responsibility Description]"
+      - description: "Developed and maintained financial reporting applications"
+      - description: "Collaborated with cross-functional teams to implement features"
     skills_acquired:
-      - "[Skill]"
-      - "[Skill]"
-      - "[Skill]"
+      - "Java"
+      - "Spring Boot"
+      - "SQL"
 
 projects:
-  - name: "[Project Name]"
-    description: "[Project Description]"
-    link: "[Project Link]"
+  - name: "E-commerce Platform"
+    description: "Built a full-stack e-commerce platform with React, Node.js, and MongoDB"
+    link: "https://github.com/johndoe/ecommerce-platform"
 
-  - name: "[Project Name]"
-    description: "[Project Description]"
-    link: "[Project Link]"
-
-achievements:
-  - name: "[Achievement Name]"
-    description: "[Achievement Description]"
-  - name: "[Achievement Name]"
-    description: "[Achievement Description]"
-
-certifications:
-  - name: "[Certification Name]"
-    description: "[Certification Description]"
-  - name: "[Certification Name]"
-    description: "[Certification Description]"
+  - name: "Personal Finance Tracker"
+    description: "Developed a mobile app to track expenses and create budgets"
 
 languages:
-  - language: "[Language]"
-    proficiency: "[Proficiency Level]"
-  - language: "[Language]"
-    proficiency: "[Proficiency Level]"
+  - language: "English"
+    proficiency: "Native"
+  - language: "Spanish"
+    proficiency: "Intermediate"
 
 interests:
-  - "[Interest]"
-  - "[Interest]"
-  - "[Interest]"
+  - "Open-source software development"
+  - "Machine learning"
+  - "Hiking"
+  
+remote: true
+hybrid: true
+onsite: true
 
-availability:
-  notice_period: "[Notice Period]"
+experience_level:
+  internship: false
+  entry: true
+  associate: true
+  mid_senior_level: true
+  director: false
+  executive: false
 
-salary_expectations:
-  salary_range_usd: "[Salary Range]"
+job_types:
+  full_time: true
+  contract: false
+  part_time: false
+  temporary: true
+  internship: false
+  other: false
+  volunteer: true
 
-self_identification:
-  gender: "[Gender]"
-  pronouns: "[Pronouns]"
-  veteran: "[Yes/No]"
-  disability: "[Yes/No]"
-  ethnicity: "[Ethnicity]"
+date:
+  all_time: false
+  month: false
+  week: false
+  24_hours: true
 
+positions:
+  - Software engineer
 
-legal_authorization:
-  eu_work_authorization: "[Yes/No]"
-  us_work_authorization: "[Yes/No]"
-  requires_us_visa: "[Yes/No]"
-  requires_us_sponsorship: "[Yes/No]"
-  requires_eu_visa: "[Yes/No]"
-  legally_allowed_to_work_in_eu: "[Yes/No]"
-  legally_allowed_to_work_in_us: "[Yes/No]"
-  requires_eu_sponsorship: "[Yes/No]"
-  canada_work_authorization: "[Yes/No]"
-  requires_canada_visa: "[Yes/No]"
-  legally_allowed_to_work_in_canada: "[Yes/No]"
-  requires_canada_sponsorship: "[Yes/No]"
-  uk_work_authorization: "[Yes/No]"
-  requires_uk_visa: "[Yes/No]"
-  legally_allowed_to_work_in_uk: "[Yes/No]"
-  requires_uk_sponsorship: "[Yes/No]"
+locations:
+  - Germany
 
+apply_once_at_company: true
 
-work_preferences:
-  remote_work: "[Yes/No]"
-  in_person_work: "[Yes/No]"
-  open_to_relocation: "[Yes/No]"
-  willing_to_complete_assessments: "[Yes/No]"
-  willing_to_undergo_drug_tests: "[Yes/No]"
-  willing_to_undergo_background_checks: "[Yes/No]"
+distance: 100
+
+company_blacklist:
+  - wayfair
+  - Crossover
+
+title_blacklist:
+  - word1
+  - word2
+
+location_blacklist:
+  - Brazil
