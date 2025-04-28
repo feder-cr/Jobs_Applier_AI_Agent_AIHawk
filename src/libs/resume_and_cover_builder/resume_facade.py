@@ -11,7 +11,7 @@ from loguru import logger
 
 from src.libs.resume_and_cover_builder.llm.llm_job_parser import LLMParser
 from src.job import Job
-from src.utils.chrome_utils import HTML_to_PDF
+from src.utils.chrome_utils import HTML_to_PDF, fetch_page_html
 from .config import global_config
 
 class ResumeFacade:
@@ -38,8 +38,6 @@ class ResumeFacade:
         self.resume_generator.set_resume_object(resume_object)
         self.selected_style = None  # Property to store the selected style
     
-    def set_driver(self, driver):
-         self.driver = driver
 
     def prompt_user(self, choices: list[str], message: str) -> str:
         """
