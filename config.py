@@ -2,8 +2,8 @@
 
 from src.utils.constants import DEBUG, ERROR, LLM_MODEL, OPENAI
 
-#config related to logging must have prefix LOG_
-LOG_LEVEL = 'ERROR'
+# config related to logging must have prefix LOG_
+LOG_LEVEL = "ERROR"
 LOG_SELENIUM_LEVEL = ERROR
 LOG_TO_FILE = False
 LOG_TO_CONSOLE = False
@@ -16,15 +16,22 @@ JOB_SUITABILITY_SCORE = 7
 JOB_MAX_APPLICATIONS = 5
 JOB_MIN_APPLICATIONS = 1
 
-LLM_MODEL_TYPE = 'openai'
-LLM_MODEL = 'gpt-4o-mini'
+LLM_MODEL_TYPE = "openai"
+LLM_MODEL = "o4-mini"
 # Only required for OLLAMA models
-LLM_API_URL = ''
+LLM_API_URL = ""
 
 SUPPORTED_OPENAI_MODELS = [
-    "gpt-4o-mini", "gpt-4o",
-    "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-turbo", "gpt-4.1-nano",
+    "gpt-4o-mini",
+    "gpt-4o",
+    "gpt-4.1",
+    "gpt-4.1-mini",
+    "gpt-4.1-turbo",
+    "gpt-4.1-nano",
     "o4-mini",
-    "o3", "o3-mini",
-    "o1", "o1-mini", "o1-pro",
+    "o3",
+    "o3-mini",
+    "o1",
+    "o1-mini",
+    "o1-pro",
 ]
