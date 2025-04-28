@@ -70,10 +70,7 @@ class ResumeFacade:
 
         
     def link_to_job(self, job_url):
-        self.driver.get(job_url)
-        self.driver.implicitly_wait(10)
-        body_element = self.driver.find_element("tag name", "body")
-        body_element = body_element.get_attribute("outerHTML")
+        body_element = fetch_page_html(job_url)
         self.llm_job_parser = LLMParser(openai_api_key=global_config.API_KEY,
                                         model_name=cfg.LLM_MODEL)
         self.llm_job_parser.set_body_html(body_element)
@@ -107,8 +104,7 @@ class ResumeFacade:
         # Generate a unique name using the job URL hash
         suggested_name = hashlib.md5(self.job.link.encode()).hexdigest()[:10]
         
-        result = HTML_to_PDF(html_resume, self.driver)
-        self.driver.quit()
+        result = HTML_to_PDF(html_resume)
         return result, suggested_name
     
     
@@ -127,8 +123,7 @@ class ResumeFacade:
             raise ValueError("You must choose a style before generating the PDF.")
         
         html_resume = self.resume_generator.create_resume(style_path, cfg.LLM_MODEL)
-        result = HTML_to_PDF(html_resume, self.driver)
-        self.driver.quit()
+        result = HTML_to_PDF(html_resume)
         return result
 
     def create_cover_letter(self) -> tuple[bytes, str]:
@@ -152,6 +147,5 @@ class ResumeFacade:
         suggested_name = hashlib.md5(self.job.link.encode()).hexdigest()[:10]
 
         
-        result = HTML_to_PDF(cover_letter_html, self.driver)
-        self.driver.quit()
+        result = HTML_to_PDF(cover_letter_html)
         return result, suggested_name

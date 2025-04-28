@@ -7,16 +7,11 @@ from typing import List, Optional, Tuple, Dict
 import click
 import inquirer
 import yaml
-from selenium import webdriver
-from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.chrome.service import Service as ChromeService
-from webdriver_manager.chrome import ChromeDriverManager
 import re
 from src.libs.resume_and_cover_builder import ResumeFacade, ResumeGenerator, StyleManager
 from src.resume_schemas.job_application_profile import JobApplicationProfile
 from src.resume_schemas.resume import Resume
 from src.logging import logger
-from src.utils.chrome_utils import init_browser
 from src.utils.constants import (
     PLAIN_TEXT_RESUME_YAML,
     SECRETS_YAML,
@@ -260,7 +255,6 @@ def create_cover_letter(parameters: dict, llm_api_key: str):
         job_url = answers.get('job_url')
         resume_generator = ResumeGenerator()
         resume_object = Resume(plain_text_resume)
-        driver = init_browser()
         resume_generator.set_resume_object(resume_object)
         resume_facade = ResumeFacade(            
             api_key=llm_api_key,
@@ -269,7 +263,6 @@ def create_cover_letter(parameters: dict, llm_api_key: str):
             resume_object=resume_object,
             output_path=Path("data_folder/output"),
         )
-        resume_facade.set_driver(driver)
         resume_facade.link_to_job(job_url)
         result_base64, suggested_name = resume_facade.create_cover_letter()         
 
@@ -345,7 +338,6 @@ def create_resume_pdf_job_tailored(parameters: dict, llm_api_key: str):
         job_url = answers.get('job_url')
         resume_generator = ResumeGenerator()
         resume_object = Resume(plain_text_resume)
-        driver = init_browser()
         resume_generator.set_resume_object(resume_object)
         resume_facade = ResumeFacade(            
             api_key=llm_api_key,
@@ -354,7 +346,6 @@ def create_resume_pdf_job_tailored(parameters: dict, llm_api_key: str):
             resume_object=resume_object,
             output_path=Path("data_folder/output"),
         )
-        resume_facade.set_driver(driver)
         resume_facade.link_to_job(job_url)
         result_base64, suggested_name = resume_facade.create_resume_pdf_job_tailored()         
 
@@ -430,7 +421,6 @@ def create_resume_pdf(parameters: dict, llm_api_key: str):
         # Initialize the Resume Generator
         resume_generator = ResumeGenerator()
         resume_object = Resume(plain_text_resume)
-        driver = init_browser()
         resume_generator.set_resume_object(resume_object)
 
         # Create the ResumeFacade
@@ -441,7 +431,6 @@ def create_resume_pdf(parameters: dict, llm_api_key: str):
             resume_object=resume_object,
             output_path=Path("data_folder/output"),
         )
-        resume_facade.set_driver(driver)
         result_base64 = resume_facade.create_resume_pdf()
 
         # Decode Base64 to binary data
