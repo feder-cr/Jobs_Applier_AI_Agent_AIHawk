@@ -3,6 +3,7 @@ import tempfile
 import textwrap
 import time
 import re  # For email validation
+import config as cfg
 from src.libs.resume_and_cover_builder.utils import LoggerChatModel
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
@@ -33,13 +34,15 @@ logger.add(log_path / "gpt_resume.log", rotation="1 day", compression="zip", ret
 
 
 class LLMParser:
-    def __init__(self, openai_api_key):
+    def __init__(self, openai_api_key, model_name: str | None = None):
+        selected_model = model_name or cfg.LLM_MODEL
         self.llm = LoggerChatModel(
             ChatOpenAI(
-                model_name="gpt-4o-mini", openai_api_key=openai_api_key, temperature=0.4
+                model_name=selected_model, openai_api_key=openai_api_key, temperature=0.4
             )
         )
-        self.llm_embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)  # Initialize embeddings
+        self.llm_embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key,
+                                               model=selected_model)  # Initialize embeddings
         self.vectorstore = None  # Will be initialized after document loading
 
     @staticmethod

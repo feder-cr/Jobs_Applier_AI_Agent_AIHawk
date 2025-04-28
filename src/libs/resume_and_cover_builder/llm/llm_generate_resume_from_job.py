@@ -3,6 +3,7 @@ Create a class that generates a job description based on a resume and a job desc
 """
 # app/libs/resume_and_cover_builder/llm_generate_resume_from_job.py
 import os
+import config as cfg
 from src.libs.resume_and_cover_builder.llm.llm_generate_resume import LLMResumer
 from src.libs.resume_and_cover_builder.utils import LoggerChatModel
 from langchain_core.output_parsers import StrOutputParser
@@ -22,8 +23,8 @@ log_path = Path(log_folder).resolve()
 logger.add(log_path / "gpt_resum_job_descr.log", rotation="1 day", compression="zip", retention="7 days", level="DEBUG")
 
 class LLMResumeJobDescription(LLMResumer):
-    def __init__(self, openai_api_key, strings):
-        super().__init__(openai_api_key, strings)
+    def __init__(self, openai_api_key, strings, model_name: str | None = None):
+        super().__init__(openai_api_key, strings, model_name)
 
     def set_job_description_from_text(self, job_description_text) -> None:
         """
