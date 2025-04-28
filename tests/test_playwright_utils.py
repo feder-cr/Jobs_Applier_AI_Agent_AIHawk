@@ -91,3 +91,9 @@ def test_html_to_pdf_empty_string(monkeypatch):
     utils = _reload_utils()
     with pytest.raises(ValueError):
         utils.HTML_to_PDF("   ")
+
+# ── add at the very end of the file ────────────────────────────────
+if __name__ == "__main__":
+    import pytest, sys
+    # -q  = quiet  → prints e.g. “2 passed in 0.03s”
+    sys.exit(pytest.main([__file__, "-q"]))
