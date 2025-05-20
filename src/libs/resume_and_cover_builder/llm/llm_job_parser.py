@@ -1,7 +1,5 @@
-import os
 import tempfile
 import textwrap
-import time
 import re  # For email validation
 from src.libs.resume_and_cover_builder.utils import LoggerChatModel
 from langchain_core.output_parsers import StrOutputParser
@@ -25,9 +23,9 @@ import openai
 load_dotenv()
 
 # Configure the log file
-log_folder = 'log/resume/gpt_resume'
-if not os.path.exists(log_folder):
-    os.makedirs(log_folder)
+log_folder = Path('log/resume/gpt_resume')
+log_folder.mkdir(parents=True, exist_ok=True)
+
 log_path = Path(log_folder).resolve()
 logger.add(log_path / "gpt_resume.log", rotation="1 day", compression="zip", retention="7 days", level="DEBUG")
 

@@ -1,4 +1,5 @@
 click
+inquirer
 git+https://github.com/feder-cr/lib_resume_builder_AIHawk.git
 httpx~=0.27.2
 inputimeout==1.0.4

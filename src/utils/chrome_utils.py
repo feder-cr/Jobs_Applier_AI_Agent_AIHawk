@@ -3,9 +3,11 @@ import time
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.webdriver import WebDriver
 from webdriver_manager.chrome import ChromeDriverManager  # Import webdriver_manager
 import urllib
 from src.logging import logger
+from constants import PAGE_LOAD_WAIT_TIME
 
 def chrome_browser_options():
     logger.debug("Setting Chrome browser options")
@@ -48,7 +50,7 @@ def init_browser() -> webdriver.Chrome:
 
 
 
-def HTML_to_PDF(html_content, driver):
+def HTML_to_PDF(html_content, driver: WebDriver):
     """
     Converte una stringa HTML in un PDF e restituisce il PDF come stringa base64.
 
@@ -60,6 +62,7 @@ def HTML_to_PDF(html_content, driver):
     """
     # Validazione del contenuto HTML
     if not isinstance(html_content, str) or not html_content.strip():
+        logger.error("Invalid HTML content provided")
         raise ValueError("Il contenuto HTML deve essere una stringa non vuota.")
 
     # Codifica l'HTML in un URL di tipo data
@@ -69,7 +72,7 @@ def HTML_to_PDF(html_content, driver):
     try:
         driver.get(data_url)
         # Attendi che la pagina si carichi completamente
-        time.sleep(2)  # Potrebbe essere necessario aumentare questo tempo per HTML complessi
+        time.sleep(PAGE_LOAD_WAIT_TIME)  # Potrebbe essere necessario aumentare questo tempo per HTML complessi
 
         # Esegue il comando CDP per stampare la pagina in PDF
         pdf_base64 = driver.execute_cdp_cmd("Page.printToPDF", {

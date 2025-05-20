@@ -16,15 +16,18 @@ def remove_default_loggers():
     if os.path.exists("log/app.log"):
         os.remove("log/app.log")
 
-def init_loguru_logger():
+def init_loguru_logger() -> None:
     """Initialize and configure loguru logger."""
 
     def get_log_filename():
         return f"log/app.log"
 
     log_file = get_log_filename()
-
-    os.makedirs(os.path.dirname(log_file), exist_ok=True)
+    try:
+        os.makedirs(os.path.dirname(log_file), exist_ok=True)
+    except OSError as e:
+        print(f"Failed to create log directory {os.path.dirname(log_file)}: {e}")
+        raise
 
     logger.remove()
 
@@ -58,7 +61,6 @@ def init_selenium_logger():
     os.makedirs(os.path.dirname(log_file), exist_ok=True)
 
     selenium_logger.handlers.clear()
-
     selenium_logger.setLevel(LOG_SELENIUM_LEVEL)
 
     # Create file handler for selenium logger
