@@ -75,3 +75,5 @@ OLLAMA = "ollama"
 GEMINI = "gemini"
 HUGGINGFACE = "huggingface"
 PERPLEXITY = "perplexity"
+
+PAGE_LOAD_WAIT_TIME = 2

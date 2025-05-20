@@ -224,7 +224,7 @@ class LLMLogger:
         logger.debug(f"Parsed reply received: {parsed_reply}")
 
         try:
-            calls_log = os.path.join(Path("data_folder/output"), "open_ai_calls.json")
+            calls_log = Path("data_folder/output") / "open_ai_calls.json"
             logger.debug(f"Logging path determined: {calls_log}")
         except Exception as e:
             logger.error(f"Error determining the log path: {str(e)}")
@@ -470,9 +470,9 @@ class GPTAnswerer:
     @staticmethod
     def find_best_match(text: str, options: list[str]) -> str:
         logger.debug(f"Finding best match for text: '{text}' in options: {options}")
-        distances = [
-            (option, distance(text.lower(), option.lower())) for option in options
-        ]
+        distances = list(map(
+            lambda option: (option, distance(text.lower(), option.lower())), options
+        ))
         best_option = min(distances, key=lambda x: x[1])[0]
         logger.debug(f"Best match found: {best_option}")
         return best_option
@@ -505,8 +505,17 @@ class GPTAnswerer:
 
     def _clean_llm_output(self, output: str) -> str:
         return output.replace("*", "").replace("#", "").strip()
-    
+
     def summarize_job_description(self, text: str) -> str:
+        """
+        Summarizes the given job description text using LLM.
+
+        Args:
+            text (str): The job description text to be summarized.
+
+        Returns:
+            str: The summarized job description.
+        """
         logger.debug(f"Summarizing job description: {text}")
         prompts.summarize_prompt_template = self._preprocess_template_string(
             prompts.summarize_prompt_template
@@ -685,19 +694,27 @@ class GPTAnswerer:
 
     def is_job_suitable(self):
         logger.info("Checking if job is suitable")
-        prompt = ChatPromptTemplate.from_template(prompts.is_relavant_position_template)
-        chain = prompt | self.llm_cheap | StrOutputParser()
-        raw_output = chain.invoke(
-            {
-                RESUME: self.resume,
-                JOB_DESCRIPTION: self.job_description,
-            }
-        )
-        output = self._clean_llm_output(raw_output)
-        logger.debug(f"Job suitability output: {output}")
-
         try:
-            score = re.search(r"Score:\s*(\d+)", output, re.IGNORECASE).group(1)
+            prompt = ChatPromptTemplate.from_template(prompts.is_relavant_position_template)
+            chain = prompt | self.llm_cheap | StrOutputParser()
+            raw_output = chain.invoke(
+                {
+                    RESUME: self.resume,
+                    JOB_DESCRIPTION: self.job_description,
+                }
+            )
+            output = self._clean_llm_output(raw_output)
+            logger.debug(f"Job suitability output: {output}")
+        except Exception as e:
+            logger.error(f"Error during job suitability check: {e}")
+            return False
+        
+        # Pre-compiled regular expressions.
+        score_pattern = re.compile(r"Score:\s*(\d+)", re.IGNORECASE)
+        reasoning_pattern = re.compile(r"Reasoning:\s*(.+)", re.IGNORECASE | re.DOTALL)
+        try:
+            score = score_pattern.search(output).group(1)
+            logger.debug(f"Extracted score: {score}")
             reasoning = re.search(r"Reasoning:\s*(.+)", output, re.IGNORECASE | re.DOTALL).group(1)
         except AttributeError:
             logger.warning("Failed to extract score or reasoning from LLM. Proceeding with application, but job may or may not be suitable.")

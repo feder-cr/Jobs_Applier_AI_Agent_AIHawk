@@ -2,8 +2,8 @@
 Create a class that generates a resume based on a resume and a resume template.
 """
 # app/libs/resume_and_cover_builder/gpt_resume.py
-import os
 import textwrap
+from src.libs.resume_schemas.resume import Resume
 from src.libs.resume_and_cover_builder.utils import LoggerChatModel
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
@@ -12,22 +12,32 @@ from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from loguru import logger
 from pathlib import Path
+from typing import Optional
 
 # Load environment variables from .env file
-load_dotenv()
+if not load_dotenv():
+    logger.error("Error loading environment variables from .env file")
 
 # Configure log file
-log_folder = 'log/resume/gpt_resume'
-if not os.path.exists(log_folder):
-    os.makedirs(log_folder)
-log_path = Path(log_folder).resolve()
-logger.add(log_path / "gpt_resume.log", rotation="1 day", compression="zip", retention="7 days", level="DEBUG")
+log_folder = Path('log/resume/gpt_resume')
+log_folder.mkdir(parents=True, exist_ok=True)
+
+# Resolve the log path
+log_path = log_folder.resolve()
+logger.add(
+    log_path / "gpt_resume.log",
+    rotation="1 day", compression="zip",
+    retention="7 days", level="DEBUG",
+    backtrace=True, diagnose=True
+)
 
 class LLMResumer:
     def __init__(self, openai_api_key, strings):
         self.llm_cheap = LoggerChatModel(
             ChatOpenAI(
-                model_name="gpt-4o-mini", openai_api_key=openai_api_key, temperature=0.4
+                model_name="gpt-4o-mini",
+                openai_api_key=openai_api_key,
+                temperature=0.4
             )
         )
         self.strings = strings
@@ -43,7 +53,7 @@ class LLMResumer:
         """
         return textwrap.dedent(template)
 
-    def set_resume(self, resume) -> None:
+    def set_resume(self, resume: Resume) -> None:
         """
         Set the resume object to be used for generating the resume.
         Args:
@@ -51,7 +61,7 @@ class LLMResumer:
         """
         self.resume = resume
 
-    def generate_header(self, data = None) -> str:
+    def generate_header(self, data: Optional[dict] = None) -> str:
         """
         Generate the header section of the resume.
         Args:
@@ -64,13 +74,18 @@ class LLMResumer:
         )
         prompt = ChatPromptTemplate.from_template(header_prompt_template)
         chain = prompt | self.llm_cheap | StrOutputParser()
-        input_data = {
+        input_data = data if data is not None else {
             "personal_information": self.resume.personal_information
-        } if data is None else data
-        output = chain.invoke(input_data)
+        }
+        logger.debug(f"Input data for the chain: {input_data}")
+        try:
+            output = chain.invoke(input_data)
+        except Exception as e:
+            logger.error(f"Error generating header: {e}", exc_info=True)
+            return ""
         return output
     
-    def generate_education_section(self, data = None) -> str:
+    def generate_education_section(self, data: Optional[dict] = None) -> str:
         """
         Generate the education section of the resume.
         Args:
@@ -98,7 +113,7 @@ class LLMResumer:
         logger.debug("Education section generation completed")
         return output
 
-    def generate_work_experience_section(self, data = None) -> str:
+    def generate_work_experience_section(self, data: Optional[dict] = None) -> str:
         """
         Generate the work experience section of the resume.
         Args:
@@ -154,7 +169,7 @@ class LLMResumer:
         logger.debug("Side projects section generation completed")
         return output
 
-    def generate_achievements_section(self, data = None) -> str:
+    def generate_achievements_section(self, data: Optional[dict] = None) -> str:
         """
         Generate the achievements section of the resume.
         Args:
@@ -188,6 +203,8 @@ class LLMResumer:
     def generate_certifications_section(self, data = None) -> str:
         """
         Generate the certifications section of the resume.
+        Args:
+            data (dict): The certifications to use for generating the certifications section.
         Returns:
             str: The generated certifications section.
         """
@@ -216,16 +233,16 @@ class LLMResumer:
     def generate_additional_skills_section(self, data = None) -> str:
         """
         Generate the additional skills section of the resume.
+        Args:
+            data (dict): The additional skills to use for generating the additional skills section.
         Returns:
             str: The generated additional skills section.
         """
         additional_skills_prompt_template = self._preprocess_template_string(self.strings.prompt_additional_skills)
-        
-        skills = set()
-        if self.resume.experience_details:
-            for exp in self.resume.experience_details:
-                if exp.skills_acquired:
-                    skills.update(exp.skills_acquired)
+
+        skills = {
+            skill for exp in (self.resume.experience_details or []) for skill in exp.skills_acquired
+        }
 
         if self.resume.education_details:
             for edu in self.resume.education_details:
@@ -240,24 +257,44 @@ class LLMResumer:
             "skills": skills,
         } if data is None else data
         output = chain.invoke(input_data)
-        
+
         return output
 
     def generate_html_resume(self) -> str:
         """
-        Generate the full HTML resume based on the resume object.
+        Generate the full HTML resume based on the resume object,
+        fetching and generating various sections.
+
         Returns:
             str: The generated HTML resume.
+        
+        Example:
+        
         """
+
+        def generate_section(name: str, condition: bool, generate_fn: callable):
+            """
+            Returns the HTML content for a section if the condition is true.
+
+            Args:
+                name (str): The name of the section.
+                condition (bool): The condition to check.
+                generate_fn (callable): The function to generate the section content.
+
+            Returns:
+                str: The HTML content for the section if the condition is true, otherwise an empty string.
+            """
+            return generate_fn() if condition else ""
+
         def header_fn():
-            if self.resume.personal_information:
-                return self.generate_header()
-            return ""
+            return generate_section(
+                "header", bool(self.resume.personal_information), self.generate_header
+            )
 
         def education_fn():
-            if self.resume.education_details:
-                return self.generate_education_section()
-            return ""
+            return generate_section(
+                "education", bool(self.resume.education_details), self.generate_education_section
+            )
 
         def work_experience_fn():
             if self.resume.experience_details:
@@ -265,25 +302,24 @@ class LLMResumer:
             return ""
 
         def projects_fn():
-            if self.resume.projects:
-                return self.generate_projects_section()
-            return ""
+            return generate_section(
+                "projects", bool(self.resume.projects), self.generate_projects_section
+            )
 
         def achievements_fn():
-            if self.resume.achievements:
-                return self.generate_achievements_section()
-            return ""
-        
+            return generate_section(
+                "achievements", bool(self.resume.achievements), self.generate_achievements_section
+            )
+
         def certifications_fn():
-            if self.resume.certifications:
-                return self.generate_certifications_section()
-            return ""
+            return generate_section(
+                "certifications", bool(self.resume.certifications), self.generate_certifications_section
+            )
 
         def additional_skills_fn():
-            if (self.resume.experience_details or self.resume.education_details or
-                self.resume.languages or self.resume.interests):
-                return self.generate_additional_skills_section()
-            return ""
+            condition = (self.resume.experience_details or self.resume.education_details or
+                         self.resume.languages or self.resume.interests)
+            return generate_section("additional_skills", condition, self.generate_additional_skills_section)
 
         # Create a dictionary to map the function names to their respective callables
         functions = {
@@ -297,9 +333,10 @@ class LLMResumer:
         }
 
         # Use ThreadPoolExecutor to run the functions in parallel
-        with ThreadPoolExecutor() as executor:
+        with ThreadPoolExecutor(max_workers=min(len(functions), 7)) as executor:
             future_to_section = {executor.submit(fn): section for section, fn in functions.items()}
             results = {}
+            # Iterate over the completed futures
             for future in as_completed(future_to_section):
                 section = future_to_section[future]
                 try:
@@ -308,15 +345,17 @@ class LLMResumer:
                         results[section] = result
                 except Exception as exc:
                     logger.error(f'{section} raised an exception: {exc}')
-        full_resume = "<body>\n"
-        full_resume += f"  {results.get('header', '')}\n"
-        full_resume += "  <main>\n"
-        full_resume += f"    {results.get('education', '')}\n"
-        full_resume += f"    {results.get('work_experience', '')}\n"
-        full_resume += f"    {results.get('projects', '')}\n"
-        full_resume += f"    {results.get('achievements', '')}\n"
-        full_resume += f"    {results.get('certifications', '')}\n"
-        full_resume += f"    {results.get('additional_skills', '')}\n"
-        full_resume += "  </main>\n"
-        full_resume += "</body>"
+        full_resume = textwrap.dedent(f"""
+            <body>
+                {results.get('header', '')}
+                <main>
+                    {results.get('education', '')}
+                    {results.get('work_experience', '')}
+                    {results.get('projects', '')}
+                    {results.get('achievements', '')}
+                    {results.get('certifications', '')}
+                    {results.get('additional_skills', '')}
+                </main>
+            </body>
+        """)
         return full_resume

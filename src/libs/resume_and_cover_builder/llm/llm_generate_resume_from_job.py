@@ -2,7 +2,6 @@
 Create a class that generates a job description based on a resume and a job description template.
 """
 # app/libs/resume_and_cover_builder/llm_generate_resume_from_job.py
-import os
 from src.libs.resume_and_cover_builder.llm.llm_generate_resume import LLMResumer
 from src.libs.resume_and_cover_builder.utils import LoggerChatModel
 from langchain_core.output_parsers import StrOutputParser
@@ -15,9 +14,9 @@ from pathlib import Path
 # Load environment variables from .env file
 load_dotenv()
 
-log_folder = 'log/resume/gpt_resum_job_descr'
-if not os.path.exists(log_folder):
-    os.makedirs(log_folder)
+log_folder = Path('log/resume/gpt_resum_job_descr')
+log_folder.mkdir(parents=True, exist_ok=True)
+
 log_path = Path(log_folder).resolve()
 logger.add(log_path / "gpt_resum_job_descr.log", rotation="1 day", compression="zip", retention="7 days", level="DEBUG")
 

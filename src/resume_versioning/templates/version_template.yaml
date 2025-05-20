@@ -1,0 +1,24 @@
+# Resume Version Metadata Template
+# This file serves as a template for resume version metadata
+
+version_id: "unique-version-id"
+name: "Version Name"
+version_type: "general"  # Options: general, tech, management, sales, marketing, finance, healthcare, education, custom
+description: "Description of this resume version"
+created_date: "2024-01-01T00:00:00"
+modified_date: "2024-01-01T00:00:00"
+status: "active"  # Options: active, archived, draft, template
+tags:
+  - "tag1"
+  - "tag2"
+target_companies:
+  - "Company 1"
+  - "Company 2"
+target_roles:
+  - "Role 1"
+  - "Role 2"
+file_path: "path/to/resume/file.txt"
+metadata_path: "path/to/metadata/file.yaml"
+is_default: false
+parent_version_id: null  # ID of parent version if this is a derivative
+notes: "Additional notes about this version"
