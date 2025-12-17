@@ -61,16 +61,16 @@ Generating a generic resume without specific job tailoring.
 
 ```mermaid
 graph TD
-    User[User Input] -->|Select Style| StyleManager[Style Manager]
-    StyleManager -->|Template Path| Generator[Resume Generator]
+    User["User Input"] -->|Select Style| StyleManager["Style Manager"]
+    StyleManager -->|Template Path| Generator["Resume Generator"]
     
     subgraph Generation Process
-        ResumeData[Load Resume Data] -->|Inject| Generator
-        Generator -->|Render| HTML[HTML Resume]
-        HTML -->|Convert| PDF[PDF Generator (Selenium)]
+        ResumeData["Load Resume Data"] -->|Inject| Generator
+        Generator -->|Render| HTML["HTML Resume"]
+        HTML -->|Convert| PDF["PDF Generator (Selenium)"]
     end
     
-    PDF --> Output[Output Folder]
+    PDF --> Output["Output Folder"]
 ```
 
 ## 4. LLM Request Lifecycle

@@ -9,7 +9,7 @@ The system operates on a modular architecture where the **Core Controller** orch
 
 ```mermaid
 graph TD
-    User[User] -->|Config & Commands| CLI[CLI Entry Point (main.py)]
+    User[User] -->|Config & Commands| CLI["CLI Entry Point (main.py)"]
     
     subgraph Core Application
         CLI --> Facade[ResumeFacade]
@@ -18,15 +18,15 @@ graph TD
     end
 
     subgraph Services
-        Facade -->|Controls| Browser[Selenium / Chrome Driver]
-        Parser -->|Queries| LLM[LLM Manager (OpenAI/Claude/Ollama)]
+        Facade -->|Controls| Browser["Selenium / Chrome Driver"]
+        Parser -->|Queries| LLM["LLM Manager (OpenAI/Claude/Ollama)"]
         generator -->|Queries| LLM
     end
 
     subgraph Data Layer
-        CLI -->|Reads| ConfigFiles[YAML Config & Secrets]
-        Facade -->|Reads| ResumeData[Plain Text Resume]
-        Facade -->|Writes| Output[PDF Output]
+        CLI -->|Reads| ConfigFiles["YAML Config & Secrets"]
+        Facade -->|Reads| ResumeData["Plain Text Resume"]
+        Facade -->|Writes| Output["PDF Output"]
     end
 ```
 
