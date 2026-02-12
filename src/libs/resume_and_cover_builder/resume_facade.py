@@ -110,14 +110,11 @@ class ResumeFacade:
     
     
     
-    def create_resume_pdf(self) -> tuple[bytes, str]:
+    def create_resume_pdf(self) -> bytes:
         """
-        Create a resume PDF using the selected style and the given job description text.
-        Args:
-            job_url (str): The job URL to generate the hash for.
-            job_description_text (str): The job description text to include in the resume.
+        Create a resume PDF using the selected style.
         Returns:
-            tuple: A tuple containing the PDF content as bytes and the unique filename.
+            bytes: The PDF content as base64-encoded bytes.
         """
         style_path = self.style_manager.get_style_path()
         if style_path is None:

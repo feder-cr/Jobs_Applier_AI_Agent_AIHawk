@@ -2,7 +2,7 @@ import base64
 import sys
 from pathlib import Path
 import traceback
-from typing import List, Optional, Tuple, Dict
+from typing import Optional, Tuple, Dict
 
 import click
 import inquirer
@@ -22,9 +22,6 @@ from src.utils.constants import (
     SECRETS_YAML,
     WORK_PREFERENCES_YAML,
 )
-# from ai_hawk.bot_facade import AIHawkBotFacade
-# from ai_hawk.job_manager import AIHawkJobManager
-# from ai_hawk.llm.llm_manager import GPTAnswerer
 
 
 class ConfigError(Exception):
@@ -257,12 +254,14 @@ def create_cover_letter(parameters: dict, llm_api_key: str):
     inquirer.Text('job_url', message="Please enter the URL of the job description:")
         ]
         answers = inquirer.prompt(questions)
+        if answers is None:
+            raise ConfigError("Job URL prompt was cancelled.")
         job_url = answers.get('job_url')
         resume_generator = ResumeGenerator()
         resume_object = Resume(plain_text_resume)
         driver = init_browser()
         resume_generator.set_resume_object(resume_object)
-        resume_facade = ResumeFacade(            
+        resume_facade = ResumeFacade(
             api_key=llm_api_key,
             style_manager=style_manager,
             resume_generator=resume_generator,
@@ -342,12 +341,14 @@ def create_resume_pdf_job_tailored(parameters: dict, llm_api_key: str):
                 logger.warning("No style selected. Proceeding with default style.")
         questions = [inquirer.Text('job_url', message="Please enter the URL of the job description:")]
         answers = inquirer.prompt(questions)
+        if answers is None:
+            raise ConfigError("Job URL prompt was cancelled.")
         job_url = answers.get('job_url')
         resume_generator = ResumeGenerator()
         resume_object = Resume(plain_text_resume)
         driver = init_browser()
         resume_generator.set_resume_object(resume_object)
-        resume_facade = ResumeFacade(            
+        resume_facade = ResumeFacade(
             api_key=llm_api_key,
             style_manager=style_manager,
             resume_generator=resume_generator,
@@ -468,11 +469,11 @@ def create_resume_pdf(parameters: dict, llm_api_key: str):
         raise
 
         
-def handle_inquiries(selected_actions: List[str], parameters: dict, llm_api_key: str):
+def handle_inquiries(selected_actions: str, parameters: dict, llm_api_key: str):
     """
     Decide which function to call based on the selected user actions.
 
-    :param selected_actions: List of actions selected by the user.
+    :param selected_actions: Action selected by the user.
     :param parameters: Configuration parameters dictionary.
     :param llm_api_key: API key for the language model.
     """

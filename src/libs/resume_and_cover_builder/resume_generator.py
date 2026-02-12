@@ -57,8 +57,13 @@ class ResumeGenerator:
         gpt_answerer.set_job_description_from_text(job_description_text)
         cover_letter_html = gpt_answerer.generate_cover_letter()
         template = Template(global_config.html_template)
-        with open(style_path, "r") as f:
-            style_css = f.read()
+        try:
+            with open(style_path, "r") as f:
+                style_css = f.read()
+        except FileNotFoundError:
+            raise ValueError(f"Style file not found at path: {style_path}")
+        except Exception as e:
+            raise RuntimeError(f"Error reading CSS style file: {e}")
         return template.substitute(body=cover_letter_html, style_css=style_css)
     
     

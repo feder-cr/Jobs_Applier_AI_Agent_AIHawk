@@ -16,7 +16,7 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_text_splitters import TokenTextSplitter
 from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
-from lib_resume_builder_AIHawk.config import global_config
+from src.libs.resume_and_cover_builder.config import global_config
 from langchain_community.document_loaders import TextLoader
 from requests.exceptions import HTTPError as HTTPStatusError  # HTTP error handling
 import openai
