@@ -23,7 +23,7 @@ AIHawk supports multiple LLM providers. Set `LLM_MODEL_TYPE` in `config.py` and 
 | Ollama | `ollama` | `llama3` |
 | HuggingFace | `huggingface` | `meta-llama/Meta-Llama-3-8B-Instruct` |
 | Perplexity | `perplexity` | `llama-3.1-sonar-small-128k-online` |
-| [MiniMax](https://www.minimax.io) | `minimax` | `MiniMax-M2.5` |
+| [MiniMax](https://www.minimax.io) | `minimax` | `MiniMax-M2.7` |
 
 ---
 
