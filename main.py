@@ -7,11 +7,9 @@ from typing import List, Optional, Tuple, Dict
 import click
 import inquirer
 import yaml
-from selenium import webdriver
-from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.chrome.service import Service as ChromeService
-from webdriver_manager.chrome import ChromeDriverManager
 import re
+from src.utils.patch_lib_resume_builder import apply_patch
+apply_patch()
 from src.libs.resume_and_cover_builder import ResumeFacade, ResumeGenerator, StyleManager
 from src.resume_schemas.job_application_profile import JobApplicationProfile
 from src.resume_schemas.resume import Resume

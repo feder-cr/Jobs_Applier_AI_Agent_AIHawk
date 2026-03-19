@@ -1,93 +1,66 @@
-import os
-import time
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager  # Import webdriver_manager
 import urllib
+from playwright.sync_api import sync_playwright
 from src.logging import logger
 
-def chrome_browser_options():
-    logger.debug("Setting Chrome browser options")
-    options = Options()
-    options.add_argument("--start-maximized")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--ignore-certificate-errors")
-    options.add_argument("--disable-extensions")
-    options.add_argument("--disable-gpu")  # Opzionale, utile in alcuni ambienti
-    options.add_argument("window-size=1200x800")
-    options.add_argument("--disable-background-timer-throttling")
-    options.add_argument("--disable-backgrounding-occluded-windows")
-    options.add_argument("--disable-translate")
-    options.add_argument("--disable-popup-blocking")
-    options.add_argument("--no-first-run")
-    options.add_argument("--no-default-browser-check")
-    options.add_argument("--disable-logging")
-    options.add_argument("--disable-autofill")
-    options.add_argument("--disable-plugins")
-    options.add_argument("--disable-animations")
-    options.add_argument("--disable-cache")
-    options.add_argument("--incognito")
-    options.add_argument("--allow-file-access-from-files")  # Consente l'accesso ai file locali
-    options.add_argument("--disable-web-security")         # Disabilita la sicurezza web
-    logger.debug("Using Chrome in incognito mode")
-    
-    return options
+_playwright = None
+_browser = None
 
-def init_browser() -> webdriver.Chrome:
+
+def _get_browser():
+    """Get or create a shared Playwright browser instance."""
+    global _playwright, _browser
+    if _browser is None or not _browser.is_connected():
+        logger.debug("Launching Playwright Chromium browser")
+        _playwright = sync_playwright().start()
+        _browser = _playwright.chromium.launch(headless=True)
+    return _browser
+
+
+def init_browser():
+    """Initialize and return a new Playwright browser page."""
     try:
-        options = chrome_browser_options()
-        # Use webdriver_manager to handle ChromeDriver
-        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
-        logger.debug("Chrome browser initialized successfully.")
-        return driver
+        browser = _get_browser()
+        page = browser.new_page(viewport={"width": 1200, "height": 800})
+        logger.debug("Playwright browser page initialized successfully.")
+        return page
     except Exception as e:
         logger.error(f"Failed to initialize browser: {str(e)}")
         raise RuntimeError(f"Failed to initialize browser: {str(e)}")
 
 
-
-def HTML_to_PDF(html_content, driver):
+def HTML_to_PDF(html_content, page):
     """
-    Converte una stringa HTML in un PDF e restituisce il PDF come stringa base64.
+    Convert an HTML string to PDF and return it as a base64 string.
 
-    :param html_content: Stringa contenente il codice HTML da convertire.
-    :param driver: Istanza del WebDriver di Selenium.
-    :return: Stringa base64 del PDF generato.
-    :raises ValueError: Se l'input HTML non è una stringa valida.
-    :raises RuntimeError: Se si verifica un'eccezione nel WebDriver.
+    :param html_content: HTML string to convert.
+    :param page: Playwright page instance.
+    :return: Base64 string of the generated PDF.
     """
-    # Validazione del contenuto HTML
+    import base64
+
     if not isinstance(html_content, str) or not html_content.strip():
-        raise ValueError("Il contenuto HTML deve essere una stringa non vuota.")
+        raise ValueError("HTML content must be a non-empty string.")
 
-    # Codifica l'HTML in un URL di tipo data
     encoded_html = urllib.parse.quote(html_content)
     data_url = f"data:text/html;charset=utf-8,{encoded_html}"
 
     try:
-        driver.get(data_url)
-        # Attendi che la pagina si carichi completamente
-        time.sleep(2)  # Potrebbe essere necessario aumentare questo tempo per HTML complessi
+        page.goto(data_url, wait_until="networkidle")
 
-        # Esegue il comando CDP per stampare la pagina in PDF
-        pdf_base64 = driver.execute_cdp_cmd("Page.printToPDF", {
-            "printBackground": True,          # Includi lo sfondo nella stampa
-            "landscape": False,               # Stampa in verticale (False per ritratto)
-            "paperWidth": 8.27,               # Larghezza del foglio in pollici (A4)
-            "paperHeight": 11.69,             # Altezza del foglio in pollici (A4)
-            "marginTop": 0.8,                  # Margine superiore in pollici (circa 2 cm)
-            "marginBottom": 0.8,               # Margine inferiore in pollici (circa 2 cm)
-            "marginLeft": 0.5,                 # Margine sinistro in pollici (circa 1.27 cm)
-            "marginRight": 0.5,                # Margine destro in pollici (circa 1.27 cm)
-            "displayHeaderFooter": False,      # Non visualizzare intestazioni e piè di pagina
-            "preferCSSPageSize": True,         # Preferire le dimensioni della pagina CSS
-            "generateDocumentOutline": False,  # Non generare un sommario del documento
-            "generateTaggedPDF": False,        # Non generare PDF taggato
-            "transferMode": "ReturnAsBase64"   # Restituire il PDF come stringa base64
-        })
-        return pdf_base64['data']
+        pdf_bytes = page.pdf(
+            print_background=True,
+            landscape=False,
+            width="8.27in",
+            height="11.69in",
+            margin={
+                "top": "0.8in",
+                "bottom": "0.8in",
+                "left": "0.5in",
+                "right": "0.5in",
+            },
+            prefer_css_page_size=True,
+        )
+        return base64.b64encode(pdf_bytes).decode("utf-8")
     except Exception as e:
-        logger.error(f"Si è verificata un'eccezione WebDriver: {e}")
-        raise RuntimeError(f"Si è verificata un'eccezione WebDriver: {e}")
+        logger.error(f"Playwright PDF generation error: {e}")
+        raise RuntimeError(f"Playwright PDF generation error: {e}")

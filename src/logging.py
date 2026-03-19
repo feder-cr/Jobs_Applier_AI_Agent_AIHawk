@@ -3,9 +3,8 @@ import os
 import sys
 import logging
 from loguru import logger
-from selenium.webdriver.remote.remote_connection import LOGGER as selenium_logger
 
-from config import LOG_LEVEL, LOG_SELENIUM_LEVEL, LOG_TO_CONSOLE, LOG_TO_FILE
+from config import LOG_LEVEL, LOG_TO_CONSOLE, LOG_TO_FILE
 
 
 def remove_default_loggers():
@@ -52,29 +51,5 @@ def init_loguru_logger():
         )
 
 
-def init_selenium_logger():
-    """Initialize and configure selenium logger to write to selenium.log."""
-    log_file = "log/selenium.log"
-    os.makedirs(os.path.dirname(log_file), exist_ok=True)
-
-    selenium_logger.handlers.clear()
-
-    selenium_logger.setLevel(LOG_SELENIUM_LEVEL)
-
-    # Create file handler for selenium logger
-    file_handler = logging.handlers.TimedRotatingFileHandler(
-        log_file, when="D", interval=1, backupCount=5
-    )
-    file_handler.setLevel(LOG_SELENIUM_LEVEL)
-
-    # Define a simplified format for selenium logger entries
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-    file_handler.setFormatter(formatter)
-
-    # Add the file handler to selenium_logger
-    selenium_logger.addHandler(file_handler)
-
-
 remove_default_loggers()
 init_loguru_logger()
-init_selenium_logger()

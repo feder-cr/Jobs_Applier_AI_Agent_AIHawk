@@ -37,8 +37,8 @@ class ResumeFacade:
         self.resume_generator.set_resume_object(resume_object)
         self.selected_style = None  # Property to store the selected style
     
-    def set_driver(self, driver):
-         self.driver = driver
+    def set_driver(self, page):
+         self.driver = page
 
     def prompt_user(self, choices: list[str], message: str) -> str:
         """
@@ -69,10 +69,8 @@ class ResumeFacade:
 
         
     def link_to_job(self, job_url):
-        self.driver.get(job_url)
-        self.driver.implicitly_wait(10)
-        body_element = self.driver.find_element("tag name", "body")
-        body_element = body_element.get_attribute("outerHTML")
+        self.driver.goto(job_url, wait_until="networkidle")
+        body_element = self.driver.locator("body").inner_html()
         self.llm_job_parser = LLMParser(openai_api_key=global_config.API_KEY)
         self.llm_job_parser.set_body_html(body_element)
 
@@ -105,7 +103,7 @@ class ResumeFacade:
         suggested_name = hashlib.md5(self.job.link.encode()).hexdigest()[:10]
         
         result = HTML_to_PDF(html_resume, self.driver)
-        self.driver.quit()
+        self.driver.close()
         return result, suggested_name
     
     
@@ -125,7 +123,7 @@ class ResumeFacade:
         
         html_resume = self.resume_generator.create_resume(style_path)
         result = HTML_to_PDF(html_resume, self.driver)
-        self.driver.quit()
+        self.driver.close()
         return result
 
     def create_cover_letter(self) -> tuple[bytes, str]:
@@ -149,5 +147,5 @@ class ResumeFacade:
 
         
         result = HTML_to_PDF(cover_letter_html, self.driver)
-        self.driver.quit()
+        self.driver.close()
         return result, suggested_name
