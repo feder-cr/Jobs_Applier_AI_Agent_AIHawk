@@ -5,14 +5,13 @@ Import this module early (before any lib_resume_builder_AIHawk usage) to
 replace its Selenium-based utilities with Playwright equivalents.
 """
 import base64
-import urllib
-from playwright.sync_api import sync_playwright
+
+from src.utils.chrome_utils import _get_browser, HTML_to_PDF
 
 
 def _create_driver_playwright():
     """Replacement for lib_resume_builder_AIHawk.utils.create_driver_selenium."""
-    pw = sync_playwright().start()
-    browser = pw.chromium.launch(headless=True)
+    browser = _get_browser()
     page = browser.new_page(viewport={"width": 1200, "height": 800})
     return page
 
