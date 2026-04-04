@@ -19,12 +19,9 @@ from src.utils.resume_reviewer import review_resume_pdf
 _CONFIG_PATH = Path("data_folder/jd_matcher_config.yaml")
 _config_cache: dict = {}
 
-RESUME_DESCRIPTIONS = {
-    "AIDataEngineer": "Best for roles emphasising LLM pipelines, GenAI, AI infrastructure, MLOps with AI focus",
-    "DataandMLEngineer": "Best for roles requiring both ML lifecycle (training, evaluation, productionization) and data engineering",
-    "LeadDataEngineer": "Best for roles requiring technical ownership, cross-functional leadership, architecture authority, staff/lead level",
-    "SeniorDataEngineer": "Best for roles focused on Spark, pipelines, data platforms, cloud migration, streaming",
-}
+def _get_resume_descriptions() -> dict:
+    """Return per-variant descriptions from config, used in the Claude selection prompt."""
+    return _load_config().get("resume_descriptions", {})
 
 
 def _load_config() -> dict:
@@ -137,7 +134,7 @@ def _analyse_jd(client: Anthropic, jd_text: str, resumes: dict) -> tuple[str, st
     resume_files = _get_resume_files()
 
     resume_summary = "\n\n".join([
-        f"=== RESUME: {key} ===\n{RESUME_DESCRIPTIONS[key]}\n{_strip_html(html)[:2000]}"
+        f"=== RESUME: {key} ===\n{_get_resume_descriptions().get(key, '')}\n{_strip_html(html)[:2000]}"
         for key, html in resumes.items()
     ])
 

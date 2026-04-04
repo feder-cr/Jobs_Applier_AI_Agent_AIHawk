@@ -15,9 +15,14 @@ chrome_bin: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 candidate_name: "Your Name"
 
 # Map of resume variant keys to filenames inside resumes_dir.
-# Keys must match the labels used in RESUME_DESCRIPTIONS in jd_matcher.py.
+# Use any key names that make sense for your variants — they just need to be
+# consistent between resume_files and resume_descriptions below.
 resume_files:
-  AIDataEngineer: "YourName_Resume_AIDataEngineer.html"
-  DataandMLEngineer: "YourName_Resume_DataandMLEngineer.html"
-  LeadDataEngineer: "YourName_Resume_LeadDataEngineer.html"
-  SeniorDataEngineer: "YourName_Resume_SeniorDataEngineer.html"
+  Variant1: "YourName_Resume_Variant1.html"
+  Variant2: "YourName_Resume_Variant2.html"
+
+# Short description of each variant — sent to Claude to help it pick the best base.
+# Keys must match the keys in resume_files above.
+resume_descriptions:
+  Variant1: "Best for roles focused on X, Y, Z"
+  Variant2: "Best for roles requiring A, B, C"
