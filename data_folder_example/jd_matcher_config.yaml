@@ -1,0 +1,23 @@
+# JD Resume Matcher configuration
+# Copy this file to data_folder/jd_matcher_config.yaml and fill in your paths.
+# data_folder/jd_matcher_config.yaml is gitignored — safe to put real paths here.
+
+# Directory containing your base HTML resume files
+resumes_dir: "/path/to/your/resumes"
+
+# Directory where tailored resumes will be saved (one sub-folder per company)
+output_base_dir: "/path/to/output/JDSpecificResumes"
+
+# Path to the Chrome binary used for headless PDF conversion
+chrome_bin: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+
+# Your name — used as the prefix for output filenames (e.g. Jane_Smith_Resume.html)
+candidate_name: "Your Name"
+
+# Map of resume variant keys to filenames inside resumes_dir.
+# Keys must match the labels used in RESUME_DESCRIPTIONS in jd_matcher.py.
+resume_files:
+  AIDataEngineer: "YourName_Resume_AIDataEngineer.html"
+  DataandMLEngineer: "YourName_Resume_DataandMLEngineer.html"
+  LeadDataEngineer: "YourName_Resume_LeadDataEngineer.html"
+  SeniorDataEngineer: "YourName_Resume_SeniorDataEngineer.html"
