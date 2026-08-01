@@ -1,5 +1,3 @@
-[![Sponsored](https://readmead.site/api/ad/feder-cr)](https://readmead.site/api/click/feder-cr)
-
 ## GitAds Sponsored
 [![Sponsored by GitAds](https://gitads.dev/v1/ad-serve?source=feder-cr/jobs_applier_ai_agent_aihawk@github)](https://gitads.dev/v1/ad-track?source=feder-cr/jobs_applier_ai_agent_aihawk@github)
 
