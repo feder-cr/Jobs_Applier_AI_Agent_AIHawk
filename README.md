@@ -1,3 +1,5 @@
+[![Sponsored](https://readmead.site/api/ad/feder-cr)](https://readmead.site/api/click/feder-cr)
+
 
 <div align="center">
 
