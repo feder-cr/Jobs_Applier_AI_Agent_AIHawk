@@ -1,5 +1,4 @@
 <!-- GitAds-Verify: 4QOV864FAOOZSVB7Q25ZE663NFSD9Q3H -->
-## GitAds Sponsored
 [![Sponsored by GitAds](https://gitads.dev/v1/ad-serve?source=feder-cr/jobs_applier_ai_agent_aihawk@github)](https://gitads.dev/v1/ad-track?source=feder-cr/jobs_applier_ai_agent_aihawk@github)
 
 
