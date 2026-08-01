@@ -1,3 +1,4 @@
+<!-- GitAds-Verify: 4QOV864FAOOZSVB7Q25ZE663NFSD9Q3H -->
 [![Sponsored](https://readmead.site/api/ad/feder-cr)](https://readmead.site/api/click/feder-cr)
 
 
