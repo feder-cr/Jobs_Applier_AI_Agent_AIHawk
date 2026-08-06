@@ -14,7 +14,7 @@ langchain-ollama==0.1.3
 langchain-openai==0.1.17
 langchain-text-splitters==0.2.2
 langsmith==0.1.93
-Levenshtein==0.25.1
+Levenshtein>=0.26.0
 loguru==0.7.2
 openai==1.37.1
 pdfminer.six==20221105
@@ -29,3 +29,9 @@ pytest
 pytest-mock
 pytest-cov
 undetected-chromedriver==3.5.5
+fastapi>=0.110.0
+uvicorn[standard]>=0.24.0
+websockets>=12.0
+inquirer
+playwright>=1.44.0
+aiosqlite>=0.20.0

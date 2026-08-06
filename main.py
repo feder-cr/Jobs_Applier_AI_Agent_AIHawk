@@ -1,5 +1,16 @@
-import base64
 import sys
+
+# Check for web mode early, before importing CLI-specific dependencies
+if __name__ == "__main__" and len(sys.argv) > 1 and sys.argv[1] == "web":
+    import uvicorn
+    import config as cfg
+    from src.web.app import app
+
+    print(f"Starting AIHawk web server on {cfg.WEB_HOST}:{cfg.WEB_PORT}")
+    uvicorn.run(app, host=cfg.WEB_HOST, port=cfg.WEB_PORT)
+    sys.exit(0)
+
+import base64
 from pathlib import Path
 import traceback
 from typing import List, Optional, Tuple, Dict
