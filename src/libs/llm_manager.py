@@ -31,6 +31,7 @@ from src.utils.constants import (
     FINISH_REASON,
     GEMINI,
     HUGGINGFACE,
+    MINIMAX,
     ID,
     INPUT_TOKENS,
     INTERESTS,
@@ -181,6 +182,23 @@ class HuggingFaceModel(AIModel):
         return response
 
 
+class MiniMaxModel(AIModel):
+    def __init__(self, api_key: str, llm_model: str):
+        from langchain_openai import ChatOpenAI
+
+        self.model = ChatOpenAI(
+            model_name=llm_model,
+            openai_api_key=api_key,
+            openai_api_base="https://api.minimax.io/v1",
+            temperature=0.4,
+        )
+
+    def invoke(self, prompt: str) -> BaseMessage:
+        logger.debug("Invoking MiniMax API")
+        response = self.model.invoke(prompt)
+        return response
+
+
 class AIAdapter:
     def __init__(self, config: dict, api_key: str):
         self.model = self._create_model(config, api_key)
@@ -205,6 +223,8 @@ class AIAdapter:
             return HuggingFaceModel(api_key, llm_model)
         elif llm_model_type == PERPLEXITY:
             return PerplexityModel(api_key, llm_model)
+        elif llm_model_type == MINIMAX:
+            return MiniMaxModel(api_key, llm_model)
         else:
             raise ValueError(f"Unsupported model type: {llm_model_type}")
 
@@ -213,7 +233,7 @@ class AIAdapter:
 
 
 class LLMLogger:
-    def __init__(self, llm: Union[OpenAIModel, OllamaModel, ClaudeModel, GeminiModel]):
+    def __init__(self, llm: Union[OpenAIModel, OllamaModel, ClaudeModel, GeminiModel, MiniMaxModel]):
         self.llm = llm
         logger.debug(f"LLMLogger successfully initialized with LLM: {llm}")
 
@@ -325,7 +345,7 @@ class LLMLogger:
 
 
 class LoggerChatModel:
-    def __init__(self, llm: Union[OpenAIModel, OllamaModel, ClaudeModel, GeminiModel]):
+    def __init__(self, llm: Union[OpenAIModel, OllamaModel, ClaudeModel, GeminiModel, MiniMaxModel]):
         self.llm = llm
         logger.debug(f"LoggerChatModel successfully initialized with LLM: {llm}")
 
