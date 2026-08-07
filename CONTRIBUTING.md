@@ -14,7 +14,6 @@
 - [Development Setup](#development-setup)
 - [Testing](#testing)
 - [Communication](#communication)
-- [Development Diagrams](./docs/development_diagrams.md)
 
 Thank you for your interest in contributing to Auto_Jobs_Applier_AIHawk. This document provides guidelines for contributing to the project.
 
