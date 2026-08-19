@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "aihawk"
+version = "0.1.0"
+description = "Drive a stealth browser with an LLM from one command"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "feder-cr", email = "85809106+feder-cr@users.noreply.github.com" }]
+dependencies = [
+    "invisible-playwright-mcp",
+    "mcp>=1.2",
+    "openai>=1.30",
+    "click>=8.1",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8", "pytest-asyncio>=0.23"]
+
+[project.scripts]
+aihawk = "aihawk.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aihawk"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
