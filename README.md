@@ -2,12 +2,43 @@
   <a href="https://github.com/feder-cr/invisible_playwright"><img src="https://raw.githubusercontent.com/feder-cr/Jobs_Applier_AI_Agent_AIHawk/main/assets/invisible-playwright-banner.png" alt="invisible_playwright - the best undetectable browser" width="880"></a>
 </p>
 
-## Other projects
+<p align="center">
+  <a href="https://pypi.org/project/invisible-playwright/"><img src="https://img.shields.io/pypi/v/invisible-playwright?color=38f0c8&label=pypi" alt="PyPI"></a>
+  <a href="https://pypi.org/project/invisible-playwright/"><img src="https://static.pepy.tech/badge/invisible-playwright" alt="Downloads"></a>
+  <img src="https://img.shields.io/pypi/pyversions/invisible-playwright" alt="Python">
+  <img src="https://img.shields.io/github/license/feder-cr/invisible_playwright" alt="License">
+  <a href="https://github.com/feder-cr/invisible_playwright"><img src="https://img.shields.io/github/stars/feder-cr/invisible_playwright?style=social" alt="Stars"></a>
+</p>
 
-Most of my work now goes into [invisible_playwright](https://github.com/feder-cr/invisible_playwright),
-a Playwright replacement built on a Firefox patched at the source level, so the browser
-fingerprint is set inside the engine rather than injected from the page - the same
-automation-detection problem AIHawk ran into at scale, solved one layer lower.
+<h3 align="center">The best undetectable browser, open source.<br>An undetected Playwright on a real Firefox, patched at the source, that passes every bot detection test.</h3>
+
+## Why invisible_playwright?
+
+- **Undetected by design**: a real Firefox patched at the C++ source, so the fingerprint (navigator, screen, GPU/WebGL, canvas, fonts, audio, WebRTC) is set inside the engine, not injected into the page. No JS shim, no seam to read.
+- **Passes every bot detection test**: reCAPTCHA, hCaptcha and Cloudflare Turnstile score it as human. 5/5 detection suites.
+- **Human actions**: every click, hover and drag follows a Bezier-curve mouse path with real timing and trusted events, no teleporting cursor.
+- **100% Playwright-compatible**: sync and async, all methods, zero API changes. Switching from Playwright is two lines.
+- **Reproducible**: seed a run and get the same GPU, canvas hash and audio context every time.
+- **Proxies built in**: socks5, socks4, http and https, with DNS routed through the proxy so there is no local leak.
+- **Open source**.
+
+## Quick start
+
+```bash
+pip install invisible-playwright
+python -m invisible_playwright fetch
+```
+
+```python
+from invisible_playwright import InvisiblePlaywright
+
+with InvisiblePlaywright() as browser:
+    page = browser.new_page()
+    page.goto("https://example.com")
+    page.click("#submit")   # mouse arcs to the button on a Bezier curve
+```
+
+Full docs and source: [github.com/feder-cr/invisible_playwright](https://github.com/feder-cr/invisible_playwright)
 
 ---
 
