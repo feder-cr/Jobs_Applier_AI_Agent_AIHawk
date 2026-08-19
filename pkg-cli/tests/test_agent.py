@@ -1,5 +1,5 @@
 import pytest
-from aihawk.agent import mcp_tools_to_openai, run_task
+from aihawk.agent import _result_text, mcp_tools_to_openai, run_task
 
 
 class _Tool:
@@ -55,6 +55,16 @@ class _FakeClient:
                     return _Resp(_Msg(tool_calls=[_Call("browser_read_text", '{"selector": "body"}')]))
                 return _Resp(_Msg(content="The heading is hello"))
         self.chat = type("Chat", (), {"completions": _Completions()})()
+
+
+def test_result_text_falls_back_for_non_text_content():
+    none_text = type("Content", (), {"text": None})()
+    result_with_none_text = type("Result", (), {"content": [none_text]})()
+    assert _result_text(result_with_none_text) == "[non-text result]"
+
+    no_text_attr = type("Content", (), {})()
+    result_without_text_attr = type("Result", (), {"content": [no_text_attr]})()
+    assert _result_text(result_without_text_attr) == "[non-text result]"
 
 
 def test_mcp_tools_to_openai_shape():
