@@ -4,14 +4,6 @@
   <a href="https://github.com/feder-cr/invisible_playwright"><img src="https://raw.githubusercontent.com/feder-cr/Jobs_Applier_AI_Agent_AIHawk/main/assets/invisible-playwright-banner.png" alt="invisible_playwright - the best undetectable browser" width="880"></a>
 </p>
 
-<p align="center">
-  <a href="https://pypi.org/project/invisible-playwright/"><img src="https://img.shields.io/pypi/v/invisible-playwright?color=38f0c8&label=pypi" alt="PyPI"></a>
-  <a href="https://pypi.org/project/invisible-playwright/"><img src="https://static.pepy.tech/badge/invisible-playwright" alt="Downloads"></a>
-  <img src="https://img.shields.io/pypi/pyversions/invisible-playwright" alt="Python">
-  <img src="https://img.shields.io/github/license/feder-cr/invisible_playwright" alt="License">
-  <a href="https://github.com/feder-cr/invisible_playwright"><img src="https://img.shields.io/github/stars/feder-cr/invisible_playwright?style=social" alt="Stars"></a>
-</p>
-
 ## Why invisible_playwright?
 
 - **Undetected by design**: a real Firefox patched at the C++ source, so the fingerprint is set inside the engine, impossible to detect.
