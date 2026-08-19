@@ -18,9 +18,9 @@
 - **Passes every bot detection test**: reCAPTCHA, hCaptcha and Cloudflare Turnstile score it as human. 5/5 detection suites.
 - **Human actions**: every click, hover and drag follows a Bezier-curve mouse path with real timing and trusted events, no teleporting cursor.
 - **100% Playwright-compatible**: sync and async, all methods, zero API changes. Switching from Playwright is two lines.
-- **Reproducible**: seed a run and get the same GPU, canvas hash and audio context every time.
-- **Proxies built in**: socks5, socks4, http and https, with DNS routed through the proxy so there is no local leak.
 - **Open source**.
+
+Full docs and source: [github.com/feder-cr/invisible_playwright](https://github.com/feder-cr/invisible_playwright)
 
 ---
 
