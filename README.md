@@ -1,3 +1,23 @@
+<p align="center">
+  <a href="https://github.com/feder-cr/invisible_playwright"><img src="https://raw.githubusercontent.com/feder-cr/Jobs_Applier_AI_Agent_AIHawk/main/assets/invisible-playwright-banner.png" alt="invisible_playwright - the best undetectable browser" width="880"></a>
+</p>
+
+## Other projects
+
+Most of my work now goes into [invisible_playwright](https://github.com/feder-cr/invisible_playwright),
+a Playwright replacement built on a Firefox patched at the source level, so the browser
+fingerprint is set inside the engine rather than injected from the page - the same
+automation-detection problem AIHawk ran into at scale, solved one layer lower.
+
+A few pages from its docs, if you're curious how any of it actually works:
+
+- [The checklist for being detected on one site](https://github.com/feder-cr/invisible_playwright/blob/main/docs/playwright-detected-as-bot.md)
+- [Why an attached debugger makes automation detectable](https://github.com/feder-cr/invisible_playwright/blob/main/docs/debugger-timing-detection.md)
+- [Three ways to make Playwright undetected](https://github.com/feder-cr/invisible_playwright/blob/main/docs/playwright-stealth-levels.md)
+- [Why automating the login form is riskier than reusing a session](https://github.com/feder-cr/invisible_playwright/blob/main/docs/automating-login-vs-session-reuse.md)
+
+---
+
 <div align="center">
 
 
@@ -27,18 +47,3 @@ AIHawk has been featured by major media outlets for revolutionizing how job seek
 ---
 
 </div>
-
-## Other projects
-
-Most of my work now goes into [invisible_playwright](https://github.com/feder-cr/invisible_playwright),
-a Playwright replacement built on a Firefox patched at the source level, so the browser
-fingerprint is set inside the engine rather than injected from the page - the same
-automation-detection problem AIHawk ran into at scale, solved one layer lower.
-
-A few pages from its docs, if you're curious how any of it actually works:
-
-- [The checklist for being detected on one site](https://github.com/feder-cr/invisible_playwright/blob/main/docs/playwright-detected-as-bot.md)
-- [Why an attached debugger makes automation detectable](https://github.com/feder-cr/invisible_playwright/blob/main/docs/debugger-timing-detection.md)
-- [Three ways to make Playwright undetected](https://github.com/feder-cr/invisible_playwright/blob/main/docs/playwright-stealth-levels.md)
-- [Why automating the login form is riskier than reusing a session](https://github.com/feder-cr/invisible_playwright/blob/main/docs/automating-login-vs-session-reuse.md)
-
