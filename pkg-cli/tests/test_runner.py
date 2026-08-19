@@ -10,10 +10,8 @@ def test_child_env_maps_options_and_omits_key():
     assert env["STEALTHFOX_SEED"] == "42"
     assert env["STEALTHFOX_HEADLESS"] == "0"
     assert env["STEALTHFOX_BINARY"] == "C:/ff.exe"
-    assert env["PATH"] == "/x"                      # base env preserved
-    # the key is not a STEALTHFOX_* var and is irrelevant to the child, but must
-    # not be injected as one
-    assert "STEALTHFOX_OPENROUTER_API_KEY" not in env
+    assert env["PATH"] == "/x"                      # unrelated base env preserved
+    assert "OPENROUTER_API_KEY" not in env          # the key must NOT reach the child
 
 
 def test_child_env_defaults_headless_and_omits_absent():

@@ -13,6 +13,7 @@ from .llm import make_client
 
 def child_env(opts: Mapping[str, Any], base_env: Mapping[str, str]) -> dict:
     env = dict(base_env)
+    env.pop("OPENROUTER_API_KEY", None)   # the child (browser server) never needs it
     if opts.get("proxy"):
         env["STEALTHFOX_PROXY"] = str(opts["proxy"])
     if opts.get("seed") is not None:
