@@ -1,3 +1,5 @@
+<p align="center"><sub><b>SPONSOR</b></sub></p>
+
 <p align="center">
   <a href="https://github.com/feder-cr/invisible_playwright"><img src="https://raw.githubusercontent.com/feder-cr/Jobs_Applier_AI_Agent_AIHawk/main/assets/invisible-playwright-banner.png" alt="invisible_playwright - the best undetectable browser" width="880"></a>
 </p>
@@ -9,8 +11,6 @@
   <img src="https://img.shields.io/github/license/feder-cr/invisible_playwright" alt="License">
   <a href="https://github.com/feder-cr/invisible_playwright"><img src="https://img.shields.io/github/stars/feder-cr/invisible_playwright?style=social" alt="Stars"></a>
 </p>
-
-<h3 align="center">The best undetectable browser, open source.<br>An undetected Playwright on a real Firefox, patched at the source, that passes every bot detection test.</h3>
 
 ## Why invisible_playwright?
 
