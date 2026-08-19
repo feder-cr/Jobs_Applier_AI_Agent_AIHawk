@@ -162,3 +162,6 @@ venv.bak/
 mono_crash.*
 
 job_applications/
+# [SECURITY 2026-07-03] never commit real secrets/resume/preferences.
+# Keep data_folder_example/ (templates) tracked; ignore the live data_folder/.
+data_folder/
