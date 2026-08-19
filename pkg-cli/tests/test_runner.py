@@ -19,3 +19,9 @@ def test_child_env_defaults_headless_and_omits_absent():
     assert "STEALTHFOX_HEADLESS" not in env       # default (headless) => don't set
     assert "STEALTHFOX_PROXY" not in env
     assert "STEALTHFOX_SEED" not in env
+    assert "STEALTHFOX_PROFILE_DIR" not in env
+
+
+def test_child_env_maps_profile_dir():
+    env = child_env({"profile_dir": "C:/prof"}, {})
+    assert env["STEALTHFOX_PROFILE_DIR"] == "C:/prof"

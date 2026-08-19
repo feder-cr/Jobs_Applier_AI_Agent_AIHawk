@@ -23,14 +23,15 @@ def main() -> None:
 @click.option("--seed", type=int, default=None, help="Deterministic fingerprint seed.")
 @click.option("--headed", is_flag=True, help="Run the browser headed.")
 @click.option("--binary", default=None, help="Path to a specific engine binary.")
-def do(task, openrouter_key, model, proxy, seed, headed, binary):
+@click.option("--profile-dir", default=None, help="Persistent profile dir; logins survive across runs.")
+def do(task, openrouter_key, model, proxy, seed, headed, binary, profile_dir):
     """Run TASK in a stealth browser and print the result."""
     try:
         key = resolve_key(openrouter_key, os.environ)
     except RuntimeError as e:
         raise click.ClickException(str(e))
     mdl = resolve_model(model, os.environ)
-    opts = {"proxy": proxy, "seed": seed, "headed": headed, "binary": binary}
+    opts = {"proxy": proxy, "seed": seed, "headed": headed, "binary": binary, "profile_dir": profile_dir}
     result = asyncio.run(drive(task, opts=opts, key=key, model=mdl))
     click.echo(result)
 

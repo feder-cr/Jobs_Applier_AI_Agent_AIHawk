@@ -22,6 +22,8 @@ def child_env(opts: Mapping[str, Any], base_env: Mapping[str, str]) -> dict:
         env["STEALTHFOX_HEADLESS"] = "0"
     if opts.get("binary"):
         env["STEALTHFOX_BINARY"] = str(opts["binary"])
+    if opts.get("profile_dir"):
+        env["STEALTHFOX_PROFILE_DIR"] = str(opts["profile_dir"])
     return env
 
 
