@@ -22,24 +22,6 @@
 - **Proxies built in**: socks5, socks4, http and https, with DNS routed through the proxy so there is no local leak.
 - **Open source**.
 
-## Quick start
-
-```bash
-pip install invisible-playwright
-python -m invisible_playwright fetch
-```
-
-```python
-from invisible_playwright import InvisiblePlaywright
-
-with InvisiblePlaywright() as browser:
-    page = browser.new_page()
-    page.goto("https://example.com")
-    page.click("#submit")   # mouse arcs to the button on a Bezier curve
-```
-
-Full docs and source: [github.com/feder-cr/invisible_playwright](https://github.com/feder-cr/invisible_playwright)
-
 ---
 
 <div align="center">
