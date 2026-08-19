@@ -14,7 +14,7 @@
 
 ## Why invisible_playwright?
 
-- **Undetected by design**: a real Firefox patched at the C++ source, so the fingerprint (navigator, screen, GPU/WebGL, canvas, fonts, audio, WebRTC) is set inside the engine, not injected into the page. No JS shim, no seam to read.
+- **Undetected by design**: a real Firefox patched at the C++ source, so the fingerprint is set inside the engine, impossible to detect.
 - **Passes every bot detection test**: reCAPTCHA, hCaptcha and Cloudflare Turnstile score it as human. 5/5 detection suites.
 - **Human actions**: every click, hover and drag follows a Bezier-curve mouse path with real timing and trusted events, no teleporting cursor.
 - **100% Playwright-compatible**: sync and async, all methods, zero API changes. Switching from Playwright is two lines.
