@@ -33,6 +33,9 @@ share/python-wheels/
 MANIFEST
 chrome_profile/*
 data_folder/output/*
+data_folder/credentials.yaml
+data_folder/applications.db
+data_folder/cookies/
 answers.json
 # PyInstaller
 # Usually these files are written by a python script from a template
