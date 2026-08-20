@@ -16,6 +16,7 @@ JOB_SUITABILITY_SCORE = 7
 JOB_MAX_APPLICATIONS = 5
 JOB_MIN_APPLICATIONS = 1
 
+# Supported LLM providers: openai, claude, ollama, gemini, huggingface, perplexity, minimax
 LLM_MODEL_TYPE = 'openai'
 LLM_MODEL = 'gpt-4o-mini'
 # Only required for OLLAMA models

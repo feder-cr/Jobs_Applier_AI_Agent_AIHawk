@@ -27,6 +27,22 @@ AIHawk's core architecture remains **open source**, allowing developers to inspe
 
 ---
 
+## Supported LLM Providers
+
+AIHawk supports multiple LLM providers. Set `LLM_MODEL_TYPE` in `config.py` and provide the corresponding API key in `data_folder/secrets.yaml`:
+
+| Provider | `LLM_MODEL_TYPE` | Example Model |
+|----------|-------------------|---------------|
+| OpenAI | `openai` | `gpt-4o-mini` |
+| Anthropic Claude | `claude` | `claude-sonnet-4-20250514` |
+| Google Gemini | `gemini` | `gemini-pro` |
+| Ollama | `ollama` | `llama3` |
+| HuggingFace | `huggingface` | `meta-llama/Meta-Llama-3-8B-Instruct` |
+| Perplexity | `perplexity` | `llama-3.1-sonar-small-128k-online` |
+| [MiniMax](https://www.minimax.io) | `minimax` | `MiniMax-M3` (recommended) / `MiniMax-M2.7` |
+
+---
+
 
 AIHawk has been featured by major media outlets for revolutionizing how job seekers interact with the job market:
 
