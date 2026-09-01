@@ -13,7 +13,9 @@ import yaml
 
 import main
 
-SHIPPED = ["data_folder", "data_folder_example"]
+# data_folder is no longer tracked: it holds the user's key and CV, and it is
+# created from this example on first run. The example is the only shipped copy.
+SHIPPED = ["data_folder_example"]
 
 
 @pytest.mark.parametrize("folder", SHIPPED)
@@ -29,13 +31,21 @@ def test_shipped_secrets_provide_a_key(folder):
     assert main.ConfigValidator.validate_secrets(Path(folder) / "secrets.yaml")
 
 
+# Prefixes the common providers put on their keys. sk- covers OpenAI and
+# Anthropic, AIza is Google, hf_ is HuggingFace, gsk_ is Groq. The project only
+# calls OpenAI today, but somebody pasting any of these into the shipped file is
+# the accident this guards.
+KEY_PREFIXES = ("sk-", "AIza", "hf_", "gsk_", "xai-", "pplx-")
+
+
 @pytest.mark.parametrize("folder", SHIPPED)
 def test_shipped_secrets_are_a_placeholder_and_not_a_real_key(folder):
     key = main.ConfigValidator.validate_secrets(Path(folder) / "secrets.yaml")
-    assert not key.startswith("sk-"), (
-        f"{folder}/secrets.yaml looks like a real API key rather than a placeholder. "
-        "Credentials must never be committed here: put yours in the file locally and "
-        "keep it out of the diff."
+    looks_real = [p for p in KEY_PREFIXES if key.startswith(p)]
+    assert not looks_real, (
+        f"{folder}/secrets.yaml starts with {looks_real[0]!r}, which is what a real "
+        "API key looks like rather than a placeholder. Credentials must never be "
+        "committed here: put yours in the file locally and keep it out of the diff."
     )
 
 

@@ -1,4 +1,5 @@
 import base64
+import shutil
 import sys
 from pathlib import Path
 import traceback
@@ -185,6 +186,28 @@ class FileManager:
     """Handles file system operations and validations."""
 
     REQUIRED_FILES = [SECRETS_YAML, WORK_PREFERENCES_YAML, PLAIN_TEXT_RESUME_YAML]
+
+    @staticmethod
+    def bootstrap_data_folder(app_data_folder: Path, example_folder: Path) -> List[str]:
+        """Create the data folder from the example on a fresh clone.
+
+        data_folder holds your API key, your CV and your address, so it is not in
+        git. That used to mean a fresh clone had nothing there and the run died on
+        a missing file. Copying it is a step nobody should have to read about.
+
+        Returns the names of the files it had to create, empty if there was
+        nothing to do.
+        """
+        created = []
+        app_data_folder.mkdir(parents=True, exist_ok=True)
+        for name in FileManager.REQUIRED_FILES:
+            target = app_data_folder / name
+            source = example_folder / name
+            if target.exists() or not source.exists():
+                continue
+            shutil.copyfile(source, target)
+            created.append(name)
+        return created
 
     @staticmethod
     def validate_data_folder(app_data_folder: Path) -> Tuple[Path, Path, Path, Path]:
@@ -529,6 +552,17 @@ def main():
     try:
         # Define and validate the data folder
         data_folder = Path("data_folder")
+        created = FileManager.bootstrap_data_folder(data_folder, Path("data_folder_example"))
+        if created:
+            logger.error(
+                f"Created {', '.join(created)} in {data_folder}/ from the example. "
+                "Open them and put your own details in: plain_text_resume.yaml is "
+                "your experience, work_preferences.yaml is what you are looking "
+                "for, and secrets.yaml takes your OpenAI API key. Then run this "
+                "again."
+            )
+            sys.exit(1)
+
         secrets_file, config_file, plain_text_resume_file, output_folder = FileManager.validate_data_folder(data_folder)
 
         # Validate configuration and secrets
@@ -549,16 +583,20 @@ def main():
         logger.error(f"Configuration error: {ce}")
         logger.error(
             "Refer to the configuration guide for troubleshooting: "
-            "https://github.com/feder-cr/Auto_Jobs_Applier_AIHawk?tab=readme-ov-file#configuration"
+            "https://github.com/feder-cr/Jobs_Applier_AI_Agent_AIHawk?tab=readme-ov-file#configuration"
         )
+        sys.exit(1)
     except FileNotFoundError as fnf:
         logger.error(f"File not found: {fnf}")
         logger.error("Ensure all required files are present in the data folder.")
+        sys.exit(1)
     except RuntimeError as re:
         logger.error(f"Runtime error: {re}")
         logger.debug(traceback.format_exc())
+        sys.exit(1)
     except Exception as e:
         logger.exception(f"An unexpected error occurred: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
