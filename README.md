@@ -1,11 +1,3 @@
-<p align="center"><sub><b>SPONSOR</b></sub></p>
-
-<p align="center">
-  <a href="https://github.com/feder-cr/invisible_playwright"><img src="https://raw.githubusercontent.com/feder-cr/Jobs_Applier_AI_Agent_AIHawk/main/assets/invisible-playwright-banner.png" alt="invisible_playwright - the best undetectable browser" width="880"></a>
-</p>
-
----
-
 <div align="center">
 
 # AIHawk
