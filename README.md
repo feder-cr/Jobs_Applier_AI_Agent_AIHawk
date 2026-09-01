@@ -26,9 +26,6 @@ It installs as a package, `invisible-playwright-mcp`, and connects over MCP, the
 protocol AI clients use to attach external tools. Your client gets thirteen
 tools; you never call them yourself.
 
-The 2024 bulk applier the press wrote about is in the git history and is not
-maintained.
-
 ## Requirements
 
 **Python 3.11 or newer**, **Windows or Linux**, and
