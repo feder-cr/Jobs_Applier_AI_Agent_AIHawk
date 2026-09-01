@@ -19,7 +19,7 @@
 
 Both halves below are open source and both work today. Pick the one you came for.
 
-The 2024 mass-application bot the press wrote about is neither of them. It is in the git history if you forked it, unmaintained, and it will not work against anything current.
+AIHawk was born as an AI web agent that applied to jobs in bulk, which is what the press above wrote about. It is becoming a general one: an agent you point at the web and tell what to do, with the job application as one thing you can ask for rather than the only thing. The 2024 bulk applier itself is in the git history, unmaintained.
 
 ## I want documents
 
