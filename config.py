@@ -6,7 +6,10 @@ from src.utils.constants import DEBUG, ERROR, LLM_MODEL, OPENAI
 LOG_LEVEL = 'ERROR'
 LOG_SELENIUM_LEVEL = ERROR
 LOG_TO_FILE = False
-LOG_TO_CONSOLE = False
+# Errors go through loguru, and loguru starts with every sink removed. With this
+# False the program was silent about everything: a missing config file, a bad API
+# key, an unreachable posting. It exited 0 and printed nothing.
+LOG_TO_CONSOLE = True
 
 MINIMUM_WAIT_TIME_IN_SECONDS = 60
 
