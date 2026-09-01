@@ -2,7 +2,7 @@
 
 # AIHawk
 
-**An LLM that writes your application documents, and a browser your AI client drives.**
+**Born as an AI web agent that applied to jobs in bulk. Becoming a general one: an agent you point at the web and tell what to do.**
 
 [**Business Insider**](https://www.businessinsider.com/aihawk-applies-jobs-for-you-linkedin-risks-inaccuracies-mistakes-2024-11) ·
 [**TechCrunch**](https://techcrunch.com/2024/10/10/a-reporter-used-ai-to-apply-to-2843-jobs/) ·
@@ -16,10 +16,6 @@
 </div>
 
 ---
-
-Both halves below are open source and both work today. Pick the one you came for.
-
-AIHawk was born as an AI web agent that applied to jobs in bulk, which is what the press above wrote about. It is becoming a general one: an agent you point at the web and tell what to do, with the job application as one thing you can ask for rather than the only thing. The 2024 bulk applier itself is in the git history, unmaintained.
 
 ## I want documents
 
