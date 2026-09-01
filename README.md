@@ -118,15 +118,6 @@ You never call these yourself. Your model does, from what you ask it.
 | Reading | `browser_navigate`, `browser_read_text`, `browser_snapshot`, `browser_take_screenshot` |
 | Acting | `browser_click`, `browser_click_at`, `browser_type`, `browser_press_key`, `browser_evaluate` |
 
-## Limitations
-
-**There is no captcha solver.** None is built in and none is wired to a third
-party service.
-
-**Nothing fills in an application and submits it.** No code in any of these
-repositories does that end to end. The browser is something you drive through
-prompts.
-
 ## Related projects
 
 | Project | What it is |
