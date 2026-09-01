@@ -1,6 +1,9 @@
 <div align="center">
 
-# AIHawk
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/aihawk-logo-dark.png">
+  <img alt="AIHawk" src="assets/aihawk-logo-light.png" width="380">
+</picture>
 
 **Born as an AI web agent that applied to jobs in bulk. Becoming a general one: an agent you point at the web and tell what to do.**
 
