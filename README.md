@@ -19,25 +19,19 @@
 
 ## Overview
 
-AIHawk is two things that ship separately.
+AIHawk gives your AI client a real browser and lets you drive it in plain
+language. Open pages, read them, click, type, come back with the answer.
 
-**The document generator**, in this repository, is a command line tool. Give it
-your profile and the URL of a job posting and it writes a resume or a cover
-letter for that posting and saves it as a PDF.
-
-**The browser**, installed as a package, is a patched Firefox exposed to any AI
-client over MCP. Your client gets thirteen tools and you describe what you want
-in plain language: open pages, read them, click, type, report back.
+It installs as a package, `invisible-playwright-mcp`, and connects over MCP, the
+protocol AI clients use to attach external tools. Your client gets thirteen
+tools; you never call them yourself.
 
 The 2024 bulk applier the press wrote about is in the git history and is not
 maintained.
 
 ## Requirements
 
-For the document generator: **Python 3.12** and **Chrome**. Chrome opens the job
-posting and renders the finished document to PDF.
-
-For the MCP server: **Python 3.11 or newer**, **Windows or Linux**, and
+**Python 3.11 or newer**, **Windows or Linux**, and
 [uv](https://docs.astral.sh/uv/), which provides the `uvx` command.
 
 ```bash
@@ -45,20 +39,10 @@ curl -LsSf https://astral.sh/uv/install.sh | sh              # macOS, Linux
 powershell -c "irm https://astral.sh/uv/install.ps1 | iex"   # Windows
 ```
 
+If you use [Claude Code](https://claude.com/claude-code), Claude Desktop, Cursor
+or anything similar, you already have the client half.
+
 ## Installation
-
-### From source
-
-```bash
-git clone https://github.com/feder-cr/Jobs_Applier_AI_Agent_AIHawk.git
-cd Jobs_Applier_AI_Agent_AIHawk
-pip install -r requirements.txt
-```
-
-### MCP server
-
-Nothing to clone. If you use [Claude Code](https://claude.com/claude-code),
-Claude Desktop, Cursor or anything similar, you already have the client half.
 
 ```bash
 claude mcp add stealth --env STEALTHFOX_PROXY=http://user:pass@host:port -- uvx invisible-playwright-mcp
@@ -84,38 +68,6 @@ thing as a config entry:
 ```
 
 ## Usage
-
-### Generating documents
-
-```bash
-python main.py
-```
-
-The first run creates `data_folder/` from `data_folder_example/`, tells you which
-files to edit, and stops. Fill in these three:
-
-| File | Put in it |
-|---|---|
-| `data_folder/plain_text_resume.yaml` | Your experience and skills |
-| `data_folder/work_preferences.yaml` | What you are looking for |
-| `data_folder/secrets.yaml` | Your OpenAI API key |
-
-They are git-ignored, so what you write there stays yours.
-
-Run it again and pick one:
-
-- **Generate Resume**
-- **Generate Resume Tailored for Job Description**
-- **Generate Tailored Cover Letter for Job Description**
-
-The two tailored options ask for a job posting URL and open it in Chrome. The
-finished PDF lands in `data_folder/output/`.
-
-Use an OpenAI key. This calls `gpt-4o-mini`, and no other provider works: an
-Anthropic or Ollama key in `secrets.yaml` gets handed to an OpenAI client and
-fails.
-
-### Driving a browser from your AI client
 
 Restart the client and list your MCP servers. `stealth` should be there with
 thirteen tools attached. Ask for one small thing first, like opening a page and
@@ -171,21 +123,17 @@ You never call these yourself. Your model does, from what you ask it.
 **There is no captcha solver.** None is built in and none is wired to a third
 party service.
 
-**Nothing joins the two halves yet.** No code in any of these repositories fills
-in an application form and submits it end to end. The generated PDF is something
-you upload yourself, and the browser is something you drive through prompts.
-
-**The document generator only calls OpenAI.** Other providers were wired up once
-and are not any more.
+**Nothing fills in an application and submits it.** No code in any of these
+repositories does that end to end. The browser is something you drive through
+prompts.
 
 ## Related projects
 
 | Project | What it is |
 |---|---|
-| [invisible_playwright](https://github.com/feder-cr/invisible_playwright) | The Python wrapper and the browser it pins and drives. Use it directly if you would rather script than prompt: the API is Playwright's. |
 | [invisible-playwright-mcp](https://github.com/feder-cr/invisible-playwright-mcp) | The MCP server installed above. |
+| [invisible_playwright](https://github.com/feder-cr/invisible_playwright) | The Python wrapper and the browser it pins and drives. Use it directly if you would rather script than prompt: the API is Playwright's. |
 | [invisible_core](https://github.com/feder-cr/invisible_core) | Seed to fingerprint to preferences, proxy and geolocation derivation. |
-| [lib_resume_builder_AIHawk](https://github.com/feder-cr/lib_resume_builder_AIHawk) | The resume rendering library this repository depends on. |
 
 ## Contributing
 
