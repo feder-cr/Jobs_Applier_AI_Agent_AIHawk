@@ -178,18 +178,21 @@ gantt
 
 ## Development Setup
 
-1. Clone the repository
-2. Install dependencies from requirements.txt
-3. Set up necessary API keys and configurations
+There is no application to build in this repository any more. What AIHawk
+installs and runs lives in the packages the README points at, and that is where
+code changes belong:
+
+- [invisible-playwright-mcp](https://github.com/feder-cr/invisible-playwright-mcp) - the MCP server
+- [invisible_playwright](https://github.com/feder-cr/invisible_playwright) - the wrapper and the browser
+- [invisible_core](https://github.com/feder-cr/invisible_core) - seed to fingerprint to preferences
+
+Each of those has its own tests and its own setup instructions.
 
 ## Testing
 
-Before submitting a PR:
-
-- Test your changes thoroughly
-- Ensure existing tests pass
-- Add new tests for new functionality
-- Verify functionality with different configurations
+A change here is a documentation change, so the test is reading it: check that
+what you wrote is true of the packages as they are published, and that any
+command you add actually runs.
 
 ## Communication
 
