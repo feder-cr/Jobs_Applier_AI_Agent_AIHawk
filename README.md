@@ -74,7 +74,7 @@ Restart the client and list your MCP servers. `stealth` should be there with
 thirteen tools attached. Ask for one small thing first, like opening a page and
 taking a screenshot.
 
-The first launch downloads a few hundred megabytes and looks like a hang. It is
+The first launch downloads the browser, about 700 MB, and looks like a hang. It is
 cached after that. If the server never appears at all, `uvx` is not on the PATH
 your client sees, which is not always the PATH your shell sees.
 
