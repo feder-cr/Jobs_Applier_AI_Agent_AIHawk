@@ -17,7 +17,9 @@
 
 ---
 
-The 2024 mass-application bot the press wrote about is not in this repository any more. It is still in the git history if you forked it and want to compare, but it is unmaintained and will not work against anything current. What is here now, and what installs beside it, is below.
+Both halves below are open source and both work today. Pick the one you came for.
+
+The 2024 mass-application bot the press wrote about is neither of them. It is in the git history if you forked it, unmaintained, and it will not work against anything current.
 
 ## I want documents
 
