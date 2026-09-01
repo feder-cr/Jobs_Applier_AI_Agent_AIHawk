@@ -57,7 +57,14 @@ The two tailored options ask for a job posting URL and open it in Chrome. The fi
 
 It installs as a package, `invisible-playwright-mcp` on PyPI. None of it is in this repository, so there is nothing to clone here.
 
-You need [uv](https://docs.astral.sh/uv/) for the `uvx` command, **Python 3.11 or newer**, and **Windows or Linux**. If you use [Claude Code](https://claude.com/claude-code), Claude Desktop, Cursor or anything similar, you already have the client half.
+You need **Python 3.11 or newer**, **Windows or Linux**, and [uv](https://docs.astral.sh/uv/), which provides the `uvx` command:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh              # macOS, Linux
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"   # Windows
+```
+
+If you use [Claude Code](https://claude.com/claude-code), Claude Desktop, Cursor or anything similar, you already have the client half.
 
 ```bash
 claude mcp add stealth --env STEALTHFOX_PROXY=http://user:pass@host:port -- uvx invisible-playwright-mcp
