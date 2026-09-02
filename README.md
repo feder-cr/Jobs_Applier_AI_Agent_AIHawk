@@ -27,7 +27,7 @@ AIHawk gives your AI client a real browser and lets you drive it in plain
 language. Open pages, read them, click, type, come back with the answer.
 
 It installs as a package, `invisible-playwright-mcp`, and connects over MCP, the
-protocol AI clients use to attach external tools. Your client gets thirteen
+protocol AI clients use to attach external tools. Your client gets fourteen
 tools; you never call them yourself.
 
 ## Requirements
@@ -71,7 +71,7 @@ thing as a config entry:
 ## Usage
 
 Restart the client and list your MCP servers. `stealth` should be there with
-thirteen tools attached. Ask for one small thing first, like opening a page and
+fourteen tools attached. Ask for one small thing first, like opening a page and
 taking a screenshot.
 
 The first launch downloads the browser, about 700 MB, and looks like a hang. It is
@@ -116,7 +116,7 @@ You never call these yourself. Your model does, from what you ask it.
 | Group | Tools |
 |---|---|
 | Pages | `session_new_page`, `session_list_pages`, `session_select_page`, `session_close_page` |
-| Reading | `browser_navigate`, `browser_read_text`, `browser_snapshot`, `browser_take_screenshot` |
+| Reading | `browser_navigate`, `browser_read_text`, `browser_snapshot`, `browser_read_html`, `browser_take_screenshot` |
 | Acting | `browser_click`, `browser_click_at`, `browser_type`, `browser_press_key`, `browser_evaluate` |
 
 ## Related projects
