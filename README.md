@@ -26,9 +26,9 @@
 AIHawk gives your AI client a real browser and lets you drive it in plain
 language. Open pages, read them, click, type, come back with the answer.
 
-It installs as a package, `invisible-playwright-mcp`, and connects over MCP, the
-protocol AI clients use to attach external tools. Your client gets fourteen
-tools; you never call them yourself.
+It installs as a package and connects over MCP, the protocol AI clients use to
+attach external tools. Your client gets fourteen tools; you never call them
+yourself.
 
 ## Requirements
 
