@@ -23,6 +23,9 @@ import sys
 
 import pytest
 
+from aihawk import agent as agent_mod
+from aihawk import link as link_mod
+from aihawk import llm as llm_mod
 from aihawk import runner
 from aihawk.runner import child_env
 
@@ -267,6 +270,26 @@ def test_os_environ_itself_survives_the_call(monkeypatch):
 # ---------------------------------------------------------------------------
 
 
+def _conversation_returning(box):
+    """A stand-in for `agent.Conversation` that records what `drive` built it with.
+
+    Shaped like the real one where drive touches it: constructed with (client,
+    model) and run with (task, call_tool, tools). Anything else would pass while
+    drive was calling something that does not exist.
+    """
+
+    class _Convo:
+        def __init__(self, client, model, **kw):
+            box["client"] = client
+            box["model"] = model
+
+        async def run(self, task, call_tool, tools, **kw):
+            box["task"] = task
+            return "FINAL"
+
+    return _Convo
+
+
 class _FakeSession:
     def __init__(self, read, write):
         self.read, self.write = read, write
@@ -276,6 +299,13 @@ class _FakeSession:
 
     async def __aexit__(self, *exc):
         return False
+
+    async def list_tools(self):
+        # Link asks for the tool list as soon as it opens, so a session double
+        # that cannot answer is a double of an older Link.
+        class _R:
+            tools = []
+        return _R()
 
     async def initialize(self):
         return None
@@ -299,15 +329,14 @@ async def test_drive_hands_the_child_the_scrubbed_environment(monkeypatch):
         captured["params"] = params
         yield ("read", "write")
 
-    async def fake_run_task(mcp, task, *, client, model):
-        captured["task"] = task
-        captured["model"] = model
-        return "FINAL"
-
-    monkeypatch.setattr(runner, "stdio_client", fake_stdio_client)
-    monkeypatch.setattr(runner, "ClientSession", _FakeSession)
-    monkeypatch.setattr(runner, "run_task", fake_run_task)
-    monkeypatch.setattr(runner, "make_client", lambda key: ("client-for", key))
+    # Patched in `link`, not in `runner`: spawning moved there so that one place
+    # knows the command, the arguments and the child environment. A test that
+    # still reached into `runner` for it would be asserting against a module that
+    # no longer makes the decision.
+    monkeypatch.setattr(link_mod, "stdio_client", fake_stdio_client)
+    monkeypatch.setattr(link_mod, "ClientSession", _FakeSession)
+    monkeypatch.setattr(agent_mod, "Conversation", _conversation_returning(captured))
+    monkeypatch.setattr(llm_mod, "make_client", lambda key: ("client-for", key))
 
     out = await runner.drive(
         "read the page",
@@ -345,14 +374,10 @@ async def test_drive_keeps_the_key_in_the_parent_client_only(monkeypatch):
         seen["env"] = params.env
         yield ("read", "write")
 
-    async def fake_run_task(mcp, task, *, client, model):
-        seen["client"] = client
-        return "FINAL"
-
-    monkeypatch.setattr(runner, "stdio_client", fake_stdio_client)
-    monkeypatch.setattr(runner, "ClientSession", _FakeSession)
-    monkeypatch.setattr(runner, "run_task", fake_run_task)
-    monkeypatch.setattr(runner, "make_client", lambda key: {"api_key": key})
+    monkeypatch.setattr(link_mod, "stdio_client", fake_stdio_client)
+    monkeypatch.setattr(link_mod, "ClientSession", _FakeSession)
+    monkeypatch.setattr(agent_mod, "Conversation", _conversation_returning(seen))
+    monkeypatch.setattr(llm_mod, "make_client", lambda key: {"api_key": key})
 
     await runner.drive("t", opts={}, key=KEY, model="m")
 
