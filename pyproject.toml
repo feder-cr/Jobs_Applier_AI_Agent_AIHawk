@@ -10,7 +10,15 @@ readme = "README.md"
 requires-python = ">=3.11"
 authors = [{ name = "feder-cr", email = "85809106+feder-cr@users.noreply.github.com" }]
 dependencies = [
-    "invisible-playwright-mcp",
+    # The floor is 0.9.0 and not "any": the tab strip needs `session_list_pages`
+    # to return id, title, url and active, and every earlier version answered
+    # with ids alone while its description promised those four. Against 0.8.1 the
+    # strip stays empty and everything else works, which is a deliberate path
+    # rather than a fault - but shipping a version that silently loses a feature
+    # is not something to leave to chance. Set only after 0.9.0 was on the index,
+    # never before: a pin to something unpublished is a package nobody can
+    # install.
+    "invisible-playwright-mcp>=0.9.0",
     "mcp>=1.2",
     "openai>=1.30",
     "click>=8.1",
