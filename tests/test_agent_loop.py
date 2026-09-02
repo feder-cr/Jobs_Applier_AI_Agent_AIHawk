@@ -716,45 +716,57 @@ async def test_arguments_are_parsed_from_json_not_forwarded_as_a_string():
     assert args == {"x": 120, "y": 44.5, "ok": True}
 
 
-async def test_malformed_tool_arguments_abort_the_whole_run():
-    """Pins measured behaviour that is also a defect: a model emitting truncated
-    JSON (routine at length, and the loop asks for temperature 0 but not for a
-    structured-output guarantee) raises out of run_task, so a task twenty turns
-    in loses everything instead of the model being told to retry.
+async def test_malformed_tool_arguments_are_reported_back_and_the_run_continues():
+    """Updated on purpose, exactly as the version before it asked to be.
 
-    Asserted here so the day someone feeds the error back to the model instead,
-    this test fails and gets updated on purpose."""
+    It used to pin the opposite - truncated JSON raising out of run_task - and
+    said so while calling it a defect: a task twenty turns in lost everything
+    because one message came back malformed, which happens routinely at length.
+    The model is told instead, and gets to try again.
+
+    The tool is NOT called with the broken arguments, which is the half that
+    would be dangerous to lose: recovering must not mean guessing what was meant.
+    """
     mcp = ScriptedMCP(tools=tools_result(tool("browser_navigate")))
     model = ScriptedModel([
         assistant_tool_calls(("c1", "browser_navigate", '{"url": "http://127.0.0.1"')),
-        assistant_answer("never reached"),
+        assistant_answer("recovered"),
     ])
 
-    with pytest.raises(json.JSONDecodeError):
-        await run_task(mcp, "go", client=model, model="m")
+    answer = await run_task(mcp, "go", client=model, model="m")
 
-    assert mcp.calls == []
-    assert len(model.requests) == 1
+    assert answer == "recovered"
+    assert mcp.calls == [], "the tool must not run with arguments that did not parse"
+    assert len(model.requests) == 2, "the model was asked again after being told"
+    fed_back = [m for m in model.requests[-1]["messages"] if m.get("role") == "tool"]
+    assert fed_back and "JSON" in fed_back[-1]["content"]
+    assert fed_back[-1]["tool_call_id"] == "c1"
 
 
-async def test_a_failing_tool_aborts_the_run_instead_of_being_reported_back():
-    """Same family, from the browser side: any exception out of call_tool (a
-    timeout, a closed page, a bad selector raised rather than returned) ends the
-    run without the model ever seeing it.
+async def test_a_failing_tool_is_reported_back_instead_of_ending_the_run():
+    """Same family, from the browser side, and updated for the same reason.
 
-    Pinned rather than endorsed; see the report."""
+    A timeout, a closed page, a refused connection: on a real site these are the
+    normal texture of a task, not the end of one. The model sees the error as the
+    tool's result and can try another way - which is the only thing that makes a
+    twenty-step task on a page nobody controls survivable.
+
+    What it must NOT do is swallow it: the text of the failure reaches the model
+    intact, so it can tell a bad selector from a dead host.
+    """
     boom = RuntimeError("Page.goto: net::ERR_CONNECTION_REFUSED")
     mcp = ScriptedMCP(tools=tools_result(tool("browser_navigate")), raises=boom)
     model = ScriptedModel([
         assistant_tool_calls(("c1", "browser_navigate", '{"url": "http://127.0.0.1:1"}')),
-        assistant_answer("never reached"),
+        assistant_answer("could not reach it"),
     ])
 
-    with pytest.raises(RuntimeError) as excinfo:
-        await run_task(mcp, "go", client=model, model="m")
+    answer = await run_task(mcp, "go", client=model, model="m")
 
-    assert "ERR_CONNECTION_REFUSED" in str(excinfo.value)
-    assert len(model.requests) == 1
+    assert answer == "could not reach it"
+    assert len(model.requests) == 2
+    fed_back = [m for m in model.requests[-1]["messages"] if m.get("role") == "tool"]
+    assert fed_back and "ERR_CONNECTION_REFUSED" in fed_back[-1]["content"]
 
 
 async def test_an_error_flagged_result_is_still_fed_back_as_text():

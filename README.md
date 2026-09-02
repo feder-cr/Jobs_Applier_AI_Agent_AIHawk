@@ -23,12 +23,23 @@
 
 ## Overview
 
-AIHawk gives your AI client a real browser and lets you drive it in plain
-language. Open pages, read them, click, type, come back with the answer.
+AIHawk gives a model a real browser and a page to work in. You type what you
+want in plain language, and you watch it happen: the conversation on the left,
+the browser on the right, live.
 
-It installs as a package and connects over MCP, the protocol AI clients use to
-attach external tools. Your client gets fourteen tools; you never call them
-yourself.
+One command, and the only thing it needs from you is an
+[OpenRouter](https://openrouter.ai) key. No client to install, no configuration
+to paste into another program, nothing else to run.
+
+```bash
+uvx aihawk ui --openrouter-key sk-or-...
+```
+
+Then open `http://127.0.0.1:8765`.
+
+The browser is a patched Firefox that looks like an ordinary one, and it is the
+same engine whether you drive it from here, from a script, or from your own
+agent.
 
 ## Requirements
 
@@ -40,78 +51,80 @@ curl -LsSf https://astral.sh/uv/install.sh | sh              # macOS, Linux
 powershell -c "irm https://astral.sh/uv/install.ps1 | iex"   # Windows
 ```
 
-If you use [Claude Code](https://claude.com/claude-code), Claude Desktop, Cursor
-or anything similar, you already have the client half.
+The first launch downloads the browser, about 700 MB, and looks like a hang. It
+is cached after that.
 
-## Installation
+## Two ways to run it
+
+**The interface.** Everything happens on one page and you can see it.
 
 ```bash
-claude mcp add stealth --env STEALTHFOX_PROXY=http://user:pass@host:port -- uvx invisible-playwright-mcp
+uvx aihawk ui --openrouter-key sk-or-... --proxy http://user:pass@host:port
 ```
 
-Drop the `--env` flag if you are not using a proxy. In any other client, the same
-thing as a config entry:
+**One shot.** Same machinery, no page, an answer on stdout. For scripts and cron.
 
-```json
-{
-  "mcpServers": {
-    "stealth": {
-      "command": "uvx",
-      "args": ["invisible-playwright-mcp"],
-      "env": {
-        "STEALTHFOX_PROXY": "http://user:pass@host:port",
-        "STEALTHFOX_SEED": "12345",
-        "STEALTHFOX_PROFILE_DIR": "/absolute/path/to/profile"
-      }
-    }
-  }
-}
+```bash
+uvx aihawk do "Open <url> and tell me the price of the first result" \
+  --openrouter-key sk-or-...
 ```
 
-## Usage
+Without a key, `aihawk ui` still starts. What answers is a placeholder that
+understands five literal commands - `go <url>`, `read [selector]`,
+`click <selector>`, `type <selector> <text>`, `shot` - which is enough to see
+the interface work, and to tell a browser problem from a model problem without
+spending anything.
 
-Restart the client and list your MCP servers. `stealth` should be there with
-fourteen tools attached. Ask for one small thing first, like opening a page and
-taking a screenshot.
-
-The first launch downloads the browser, about 700 MB, and looks like a hang. It is
-cached after that. If the server never appears at all, `uvx` is not on the PATH
-your client sees, which is not always the PATH your shell sees.
-
-The server drives the browser and nothing else: it has no disk access. Reading
-and writing files is your client's own tooling.
-
-Two things worth asking it:
+## What to ask it
 
 > Go to `<paste the URL>`. Filter to backend roles in Europe posted in the last
 > two weeks. For each result, open the posting and pull out the title, the
 > location, whether it says remote or hybrid, and anything about visa
-> sponsorship. Give me the list as a table, and append a row to shortlist.csv for
-> each one.
+> sponsorship. Give me the list as a table.
 
 > Go to `<paste the URL>`. One way, Milan to Lisbon, economy, one checked bag,
 > one adult. Check every date from the 12th to the 16th of next month, one at a
 > time, and read the cheapest fare for each day. The date field is a calendar
 > widget, so click the days rather than typing them. If a date has no
-> availability say so, do not guess a number. Write the five to flights.md sorted
-> by price, and leave the cheapest open in a tab.
+> availability say so, do not guess a number.
 
 Those two share nothing but the machinery.
 
-## Configuration
+## Options
 
-Environment variables on the MCP server entry.
+Both commands take the same browser options.
 
-| Variable | What it does |
+| Option | What it does |
 |---|---|
-| `STEALTHFOX_PROXY` | `http://user:pass@host:port`, or `socks5://`. Credentials go in the URL. |
-| `STEALTHFOX_SEED` | An integer. Same seed, same browser identity, every run. Set one for anything you run more than once. |
-| `STEALTHFOX_PROFILE_DIR` | Absolute path. Persistent profile, so logins and cookies survive restarts. Most clients pass env values through verbatim, so a leading `~` becomes a folder literally named `~`. |
-| `STEALTHFOX_HEADLESS` | Headless by default. Set `0` to watch the window, worth doing the first few times. |
+| `--openrouter-key` | Your key, or the `OPENROUTER_API_KEY` environment variable. Required for `do`, optional for `ui`. |
+| `--model` | An OpenRouter model id, or `AIHAWK_MODEL`. Defaults to a current one. |
+| `--proxy` | `http://user:pass@host:port`, or `socks5://`. Credentials go in the URL. |
+| `--seed` | An integer. Same seed, same browser identity, every run. Set one for anything you run more than once. |
+| `--profile-dir` | Absolute path. Persistent profile, so logins and cookies survive restarts. |
+| `--headed` | Show the browser window. The interface shows you the page anyway. |
+| `--host`, `--port` | `ui` only. Loopback and 8765 by default. Leave the host alone unless you mean it. |
 
-## Available tools
+The key never reaches the browser process: it is stripped from the environment
+the engine is started with, and there is a test that fails if that stops being
+true.
 
-You never call these yourself. Your model does, from what you ask it.
+## Already have an MCP client?
+
+Then you may not need this at all. The browser is exposed as an MCP server, and
+Claude Code, Claude Desktop, Cursor and anything similar can drive it directly:
+
+```bash
+claude mcp add stealth --env STEALTHFOX_PROXY=http://user:pass@host:port -- uvx invisible-playwright-mcp
+```
+
+Your client brings the model, and gets the same fourteen tools this interface
+uses. Nothing here has a private path to the browser - AIHawk is a client of
+that server like any other, which is the reason to trust that the tools are
+enough.
+
+## The tools
+
+You never call these yourself. The model does, from what you ask it.
 
 | Group | Tools |
 |---|---|
@@ -123,14 +136,14 @@ You never call these yourself. Your model does, from what you ask it.
 
 | Project | What it is |
 |---|---|
-| [invisible-playwright-mcp](https://github.com/feder-cr/invisible-playwright-mcp) | The MCP server installed above. |
+| [invisible-playwright-mcp](https://github.com/feder-cr/invisible-playwright-mcp) | The MCP server this drives. Tools only, no interface. |
 | [invisible_playwright](https://github.com/feder-cr/invisible_playwright) | The Python wrapper and the browser it pins and drives. Use it directly if you would rather script than prompt: the API is Playwright's. |
 | [invisible_core](https://github.com/feder-cr/invisible_core) | Seed to fingerprint to preferences, proxy and geolocation derivation. |
 
 ## Contributing
 
 Issues and pull requests are welcome on whichever of those the problem lives in.
-If you are not sure, open it here.
+If you are not sure, open it here. See [CONTRIBUTING](.github/CONTRIBUTING.md).
 
 When something fails on a page, say which step, what the page did, what the tool
 returned and which exit country you were on. "It got blocked" is not something
