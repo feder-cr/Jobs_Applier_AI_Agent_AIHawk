@@ -232,6 +232,20 @@ form{ padding:var(--s3) var(--s4) var(--s4); border-top:1px solid var(--line-1);
       font-size:var(--t-label); color:var(--fg-3) }
 
 /* ---------------- browser pane ---------------- */
+/* The strip only exists when there is more than one tab: a single tab labelled
+   with its own title is chrome that says nothing the address bar below it does
+   not already say. */
+#tabs{ flex:none; display:flex; gap:2px; padding:6px 8px 0; background:var(--raised);
+       overflow-x:auto; scrollbar-width:none }
+#tabs button{ flex:0 1 190px; min-width:80px; display:flex; align-items:center; gap:6px;
+              border:0; border-radius:var(--r) var(--r) 0 0; cursor:pointer;
+              background:transparent; color:var(--fg-3); padding:6px 10px;
+              font:var(--t-label)/1.4 var(--sans); white-space:nowrap;
+              overflow:hidden; text-overflow:ellipsis }
+#tabs button:hover{ background:var(--hover); color:var(--fg-2) }
+#tabs button[aria-selected="true"]{ background:var(--base); color:var(--fg) }
+#tabs .t{ overflow:hidden; text-overflow:ellipsis }
+
 #chrome{ flex:none; height:38px; display:flex; align-items:center; gap:var(--s2);
          padding:0 10px; background:var(--raised); border-bottom:1px solid var(--line-1) }
 /* The honesty contract: nothing in here is interactive except what is, so
@@ -337,6 +351,7 @@ form{ padding:var(--s3) var(--s4) var(--s4); border-top:1px solid var(--line-1);
 </div>
 
 <div id="right" data-state="idle">
+  <div id="tabs" hidden></div>
   <div id="chrome">
     <span id="dot"></span>
     <span id="url" class="dim">no page yet</span>
@@ -581,9 +596,38 @@ function paintUrl(u){
   const part = (t,c) => urlEl.appendChild(el('span', c, t));
   part(a.protocol + '//', 'dim'); part(a.host, 'host'); part(a.pathname + a.search, 'dim');
 }
+function paintTabs(rows){
+  const box = $('tabs');
+  /* One tab is not a strip. Showing it would be chrome repeating the address
+     bar directly beneath it. */
+  if(!rows || rows.length < 2){ box.hidden = true; box.textContent = ''; return; }
+  box.hidden = false;
+  box.textContent = '';
+  for(const r of rows){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('aria-selected', String(!!r.active));
+    b.title = (r.title || '') + (r.url ? '  -  ' + r.url : '');
+    b.dataset.id = r.id;
+    let host = '';
+    try { host = new URL(r.url).host; } catch(err) { host = ''; }
+    b.appendChild(el('span','t', r.title || host || r.id));
+    box.appendChild(b);
+  }
+}
+/* A tab DOES something, so it is the one thing in this chrome that may look
+   clickable. Selecting is an action on the browser like any other, and it goes
+   through the same tool an agent would call. */
+$('tabs').onclick = (e) => {
+  const b = e.target.closest('button'); if(!b) return;
+  fetch('/live/select', {method:'POST', headers:{'Content-Type':'application/json'},
+                         body: JSON.stringify({id: b.dataset.id})});
+};
+
 async function where(){
-  try { const r = await fetch('/live/where', {cache:'no-store'});
-        if(r.ok) paintUrl((await r.json()).url || ''); } catch(err){}
+  try { const r = await fetch('/live/tabs', {cache:'no-store'});
+        if(r.ok){ const j = await r.json(); paintUrl(j.url || ''); paintTabs(j.tabs); } }
+  catch(err){}
   setTimeout(where, 2000);
 }
 paint(); tick(); where();
@@ -712,24 +756,39 @@ def build_app(link: Link, service: ChatService) -> Starlette:
         png, mime = got
         return Response(png, media_type=mime, headers={"Cache-Control": "no-store"})
 
-    async def where(_request: Request) -> JSONResponse:
-        """The address the browser is on.
+    async def tabs(_request: Request) -> JSONResponse:
+        """Every tab, and which one is current.
 
-        Asked with `browser_evaluate` rather than `session_list_pages`, which
-        until 0.9.0 of the server described itself as returning "id, title, url,
-        and which one is active" and returned `["tab-1"]`. It returns all four
-        now, so this could become one round trip instead of evaluating script in
-        the page - kept as it is until the floor in pyproject.toml requires the
-        server version that fixed it.
+        ONE call where there were two. It asks `session_list_pages`, which since
+        0.9.0 of the server answers with id, title, url and active - the four
+        fields its description had always promised and had never returned. While
+        it returned ids only this had to ask `browser_evaluate` for
+        `location.href` instead, which is script in the page to learn something
+        the server already knew.
+
+        A stale or older server is not an error here: anything that does not
+        parse into those fields leaves the strip empty and the address blank,
+        and the pane keeps working as a picture.
         """
         if not link.touched:
-            return JSONResponse({"url": ""})
+            return JSONResponse({"url": "", "tabs": []})
         try:
-            raw = await link.call_text("browser_evaluate", {"expression": "location.href"})
+            raw = await link.call_text("session_list_pages")
+            rows = json.loads(raw)
         except Exception:
-            return JSONResponse({"url": ""})
-        url = (raw or "").strip().strip('"')
-        return JSONResponse({"url": url if url.startswith("http") else ""})
+            return JSONResponse({"url": "", "tabs": []})
+        if not isinstance(rows, list) or not all(isinstance(r, dict) for r in rows):
+            return JSONResponse({"url": "", "tabs": []})
+        here = next((r for r in rows if r.get("active")), rows[0] if rows else {})
+        return JSONResponse({"url": here.get("url") or "", "tabs": rows})
+
+    async def select(request: Request) -> JSONResponse:
+        body = await request.json()
+        page_id = (body or {}).get("id", "")
+        if not page_id:
+            return JSONResponse({"error": "no id"}, status_code=400)
+        await link.call("session_select_page", {"page_id": page_id})
+        return JSONResponse({"ok": True})
 
     return Starlette(routes=[
         Route("/", root),
@@ -737,5 +796,6 @@ def build_app(link: Link, service: ChatService) -> Starlette:
         Route("/chat/stop", stop, methods=["POST"]),
         Route("/chat/events", events),
         Route("/live/frame", frame),
-        Route("/live/where", where),
+        Route("/live/tabs", tabs),
+        Route("/live/select", select, methods=["POST"]),
     ])

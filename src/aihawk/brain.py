@@ -44,7 +44,7 @@ class LiteralBrain(Brain):
 
     HELP = ("I am a placeholder, not a model. I understand: "
             "`go <url>`, `read [selector]`, `click <selector>`, "
-            "`type <selector> <text>`, `shot`. "
+            "`type <selector> <text>`, `tab`, `shot`. "
             "Start the interface with an OpenRouter key to get a real one.")
 
     async def handle(self, text: str, link: Link, say: Say) -> None:
@@ -67,6 +67,12 @@ class LiteralBrain(Brain):
             await say("tool", f"browser_type {selector}")
             await say("result", await link.call_text(
                 "browser_type", {"selector": selector, "text": value}))
+        elif verb == "tab":
+            # Here so the placeholder can reach the whole surface, which is what
+            # it is for: without it the tab strip could only be exercised with a
+            # key and a model willing to open one.
+            await say("tool", "session_new_page")
+            await say("result", await link.call_text("session_new_page"))
         elif verb == "shot":
             await say("tool", "browser_take_screenshot")
             await say("result", "taken; the view on the right is live anyway")

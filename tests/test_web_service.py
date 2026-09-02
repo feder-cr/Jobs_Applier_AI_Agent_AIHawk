@@ -211,7 +211,7 @@ async def test_the_app_exposes_exactly_the_routes_the_page_calls():
     svc = ChatService(FakeLink(), SilentBrain())
     paths = {r.path for r in build_app(FakeLink(), svc).routes}
     assert paths == {"/", "/chat/send", "/chat/stop", "/chat/events",
-                     "/live/frame", "/live/where"}
+                     "/live/frame", "/live/tabs", "/live/select"}
 
 
 async def test_the_live_view_asks_for_nothing_until_an_instruction_has_been_given():
@@ -233,3 +233,70 @@ async def test_the_live_view_asks_for_nothing_until_an_instruction_has_been_give
     resp = await frame.endpoint(Req())
     assert resp.status_code == 204
     assert link.calls == [], "the view asked the server something before any instruction"
+
+
+# --------------------------------------------------------------------------
+# the tab strip, which only became possible when the tool stopped lying
+# --------------------------------------------------------------------------
+
+class TabbedLink(FakeLink):
+    def __init__(self, payload):
+        super().__init__()
+        self._payload = payload
+
+    async def call_text(self, name, arguments=None):
+        await self.call(name, arguments)
+        return self._payload
+
+
+async def _tabs_route(link, svc=None):
+    app = build_app(link, svc or ChatService(link, SilentBrain()))
+    return [r for r in app.routes if r.path == "/live/tabs"][0].endpoint
+
+
+async def test_the_address_comes_from_the_active_tab():
+    """One call where there were two.
+
+    While `session_list_pages` answered with ids only, this had to ask
+    `browser_evaluate` for `location.href`: script in the page, to learn
+    something the server already knew.
+    """
+    link = TabbedLink(json.dumps([
+        {"id": "tab-1", "title": "A", "url": "https://a.example/", "active": False},
+        {"id": "tab-2", "title": "B", "url": "https://b.example/x", "active": True},
+    ]))
+    link.touched = True
+    route = await _tabs_route(link)
+
+    class Req: query_params = {}
+    body = json.loads((await route(Req())).body)
+
+    assert body["url"] == "https://b.example/x", "the address is the ACTIVE tab's"
+    assert [t["id"] for t in body["tabs"]] == ["tab-1", "tab-2"]
+    assert [n for n, _ in link.calls] == ["session_list_pages"], (
+        "one call, and not browser_evaluate on top of it")
+
+
+async def test_an_older_server_leaves_the_strip_empty_instead_of_breaking_the_pane():
+    """A server that still answers `["tab-1"]` is not an error here. The picture
+    is the point of the pane; the strip is an extra that can be absent."""
+    link = TabbedLink(json.dumps(["tab-1", "tab-2"]))
+    link.touched = True
+    route = await _tabs_route(link)
+
+    class Req: query_params = {}
+    body = json.loads((await route(Req())).body)
+
+    assert body == {"url": "", "tabs": []}
+
+
+async def test_the_strip_asks_nothing_before_an_instruction():
+    """Same invariant as the frame: looking must not start a browser."""
+    link = TabbedLink("[]")
+    route = await _tabs_route(link)
+
+    class Req: query_params = {}
+    body = json.loads((await route(Req())).body)
+
+    assert body == {"url": "", "tabs": []}
+    assert link.calls == []
