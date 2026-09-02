@@ -14,6 +14,12 @@ dependencies = [
     "mcp>=1.2",
     "openai>=1.30",
     "click>=8.1",
+    # Declared even though `mcp` already pulls both in for streamable-http. This
+    # package now serves its own app rather than riding somebody else's, so it
+    # imports them directly, and a dependency you import is one you declare: the
+    # day mcp stops needing them, the failure would otherwise land here.
+    "starlette>=0.37",
+    "uvicorn>=0.30",
 ]
 
 [project.optional-dependencies]
@@ -28,3 +34,11 @@ packages = ["src/aihawk"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+# `ui` tests launch a real browser through a real MCP server. They are slow,
+# they must run serially, and two of them running at once give false results,
+# so they are deselected by default and asked for by name:
+#     pytest -m ui -q tests/test_ui_drive.py
+markers = [
+    "ui: drives a real browser through a real MCP server (slow, serial, opt-in)",
+]
+addopts = "-m 'not ui'"

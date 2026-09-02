@@ -1,0 +1,53 @@
+"""Turn a tool call into one readable line.
+
+The difference between a step list somebody watches and a wall of JSON. The raw
+arguments are already in the transcript the model sees; what the person on the
+left needs is the target, in the shortest form that still identifies it.
+
+Deliberately total: an unknown tool renders its arguments rather than raising or
+printing nothing, because a new tool in the server must never make the UI go
+quiet about what it just did.
+"""
+from __future__ import annotations
+
+
+def _short(value, limit: int = 60) -> str:
+    text = value if isinstance(value, str) else repr(value)
+    text = " ".join(text.split())
+    # "..." and not the single ellipsis character: these lines end up in a
+    # terminal as often as in the page, and the Windows console is cp1252, where
+    # one non-ASCII character in a print kills the process after the work is done.
+    return text if len(text) <= limit else text[: limit - 3] + "..."
+
+
+def summarise(name: str, args: dict | None) -> str:
+    args = args or {}
+
+    if name == "browser_navigate":
+        return _short(args.get("url", ""), 80)
+    if name in ("browser_click",):
+        return _short(args.get("selector", ""))
+    if name == "browser_click_at":
+        hold = args.get("hold_seconds") or 0
+        at = "%s,%s" % (args.get("x"), args.get("y"))
+        return at + (" hold %ss" % hold if hold else "")
+    if name == "browser_type":
+        return "%s <- %s" % (_short(args.get("selector", ""), 40),
+                             _short(args.get("text", ""), 40))
+    if name == "browser_press_key":
+        return _short(args.get("key", ""), 20)
+    if name == "browser_read_text":
+        return _short(args.get("selector", "body"))
+    if name == "browser_read_html":
+        return "mode=%s" % _short(args.get("mode", "form"), 20)
+    if name == "browser_evaluate":
+        return _short(args.get("expression", ""), 70)
+    if name in ("session_select_page", "session_close_page"):
+        return _short(args.get("page_id", ""), 40)
+    if name in ("browser_snapshot", "browser_take_screenshot",
+                "session_new_page", "session_list_pages"):
+        return ""
+
+    if not args:
+        return ""
+    return _short(", ".join("%s=%s" % (k, v) for k, v in args.items()), 70)
