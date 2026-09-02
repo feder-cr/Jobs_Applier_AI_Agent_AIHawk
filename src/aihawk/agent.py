@@ -76,15 +76,22 @@ class Conversation:
         self.max_turns = max_turns
         self.messages: List[dict] = [{"role": "system", "content": SYSTEM_PROMPT}]
         self.tool_defs: Optional[List[dict]] = None
-        self.usage = {"prompt": 0, "completion": 0, "calls": 0}
+        self.usage = {"prompt": 0, "completion": 0, "calls": 0, "last_prompt": 0}
 
     def _note_usage(self, resp) -> None:
         u = getattr(resp, "usage", None)
         if u is None:
             return
-        self.usage["prompt"] += getattr(u, "prompt_tokens", 0) or 0
+        last = getattr(u, "prompt_tokens", 0) or 0
+        self.usage["prompt"] += last
         self.usage["completion"] += getattr(u, "completion_tokens", 0) or 0
         self.usage["calls"] += 1
+        # The LAST turn's prompt, kept beside the running totals and not folded
+        # into them. Each turn is sent the whole transcript, so the newest prompt
+        # size IS the current occupancy of the context window; adding them up
+        # counts every earlier turn again and races past any limit within a few
+        # messages, which would make a meter built on it worse than none.
+        self.usage["last_prompt"] = last
 
     async def run(self, task: str, call_tool, tools, *, say: Say = _silent,
                   describe=None) -> str:
@@ -105,6 +112,7 @@ class Conversation:
                 tools=self.tool_defs, tool_choice="auto", temperature=0,
             )
             self._note_usage(resp)
+            await say("usage", json.dumps(self.usage))
             msg = resp.choices[0].message
             self.messages.append(msg.model_dump())
 
