@@ -142,4 +142,5 @@ not read.
 
 ## License
 
-[AGPL-3.0](LICENSE).
+[MIT](LICENSE). Everything distributed before 2 September 2026 was
+released under AGPL-3.0 and stays under it.
