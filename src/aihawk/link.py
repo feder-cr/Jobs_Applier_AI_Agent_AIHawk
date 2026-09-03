@@ -36,8 +36,13 @@ from .runner import child_env
 class Link:
     """A connection to one MCP server, and the browser behind it."""
 
-    def __init__(self, opts: Mapping[str, Any] | None = None) -> None:
+    def __init__(self, opts: Mapping[str, Any] | None = None, *,
+                 key: str | None = None) -> None:
         self._opts = dict(opts or {})
+        # Held only to keep it OUT of the child: child_env removes every
+        # variable carrying this value, and a key given on the command line
+        # is in no environment for it to find by reading.
+        self._key = key
         self._session: Optional[ClientSession] = None
         self._ctx = None
         self._sess_ctx = None
@@ -54,7 +59,7 @@ class Link:
         params = StdioServerParameters(
             command=sys.executable,
             args=["-m", "invisible_playwright_mcp"],
-            env=child_env(self._opts, os.environ),
+            env=child_env(self._opts, os.environ, key=self._key),
         )
         self._ctx = stdio_client(params)
         read, write = await self._ctx.__aenter__()
