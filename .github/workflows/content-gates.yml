@@ -1,0 +1,25 @@
+name: content-gates
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # The gate proves itself on known-bad input before it judges anything.
+      - name: Gate selftest
+        run: python scripts/check_content.py --selftest
+      - name: Content gates
+        run: python scripts/check_content.py
+      - name: Wiki renders end to end
+        run: |
+          python scripts/build_wiki.py docs /tmp/wiki-out
+          test -f /tmp/wiki-out/_Sidebar.md
+          test -f /tmp/wiki-out/Home.md
