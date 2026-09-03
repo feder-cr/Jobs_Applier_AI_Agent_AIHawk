@@ -16,9 +16,11 @@ plainly: `model    none: literal commands only.` Everything else is the
 product - the same browser engine, the same tools, the same live view - which
 is exactly what makes the mode useful rather than decorative.
 
-The asymmetry with the other command is deliberate: `aihawk do` refuses to run
-without a key, because its whole job is a model producing an answer. The
-interface runs, because most of what it shows you does not need one.
+The interface runs keyless because most of what it shows you does not need a
+model. Producing answers is the model's half of the product - and if you want
+that half without buying a key, the assistant path covers it: since aihawk
+0.3.0 the browser attaches to Claude Code, Codex or Gemini CLI over MCP, and
+the assistant brings its own model.
 
 ## What actually runs
 
@@ -84,8 +86,9 @@ The boundary is the model, and everything on the model's side of it is absent:
   or notice that a click failed - noticing is a model behavior.
 - **No answers.** It shows you raw page text; it will not extract, summarize,
   compare, or conclude. Producing an answer is the paid half of the product.
-- **No `aihawk do`.** The headless command exists to print a model's answer,
-  so keyless it exits with the error naming the two ways to supply a key.
+- **No one-shot runs.** Since 0.3.0 aihawk has no headless subcommand at all;
+  the scripted path runs through an assistant CLI with the browser attached
+  over MCP, and there the key question moves to the assistant, not to aihawk.
 
 One cost survives keylessness: the engine itself. The browser, roughly a
 quarter of a gigabyte, downloads on the first command that needs a page, even

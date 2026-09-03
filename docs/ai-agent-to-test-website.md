@@ -36,13 +36,15 @@ Run it through an editor client - [Cursor](running-aihawk-with-cursor.md) or
 code open - or from the terminal:
 
 ```bash
-uvx aihawk do "Open http://localhost:3000 and try to register a new user
+claude -p "Open http://localhost:3000 and try to register a new user
 with placeholder data. Report every field, every validation message, and
-whether registration succeeded." --headed
+whether registration succeeded."
 ```
 
-`--headed` gives you a window to watch, which for testing is worth having:
-seeing the agent hesitate on your form is itself a finding. Two properties of
+(the one-shot assistant path, since aihawk 0.3.0). If you would rather watch,
+`uvx aihawk ui` runs the same task with the live page beside the chat, which
+for testing is worth having: seeing the agent hesitate on your form is itself
+a finding. Two properties of
 this browser matter specifically for testing. It fills forms through real key
 presses and clicks, refusing script injection, so your input handlers,
 keystroke validation and change events fire the way they fire for people. And

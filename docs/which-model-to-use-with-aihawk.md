@@ -19,8 +19,8 @@ kind of work, and that has a less obvious answer than the price sheet suggests.
 
 ## How AIHawk actually spends the model
 
-Worth knowing before choosing, because the loop's shape decides the bill. Both
-`aihawk do` and the interface run the same loop: the model receives the task and
+Worth knowing before choosing, because the loop's shape decides the bill. The
+interface runs one fixed loop: the model receives the task and
 the browser tools, replies with one thought and usually one tool call, the tool
 runs, the result goes into the transcript, and the model is called again. In the
 current source the loop is capped at 25 turns per instruction, each reply is

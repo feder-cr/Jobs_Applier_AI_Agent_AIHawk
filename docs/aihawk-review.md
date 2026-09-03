@@ -40,10 +40,11 @@ There are two ways to run it, and they share one browser:
   registers the browser as an MCP server in Claude Code, Claude Desktop or
   Cursor, and your assistant's model does the thinking.
 - **Standalone.** `uvx aihawk ui` serves a local page with chat on the
-  left and the live browser on the right; `uvx aihawk do "..."` runs one
-  task headlessly and prints the answer. Both take an
-  [OpenRouter](https://openrouter.ai) key, defaulting to `z-ai/glm-4.6`,
-  and both accept `--model` for anything OpenRouter serves.
+  left and the live browser on the right. It takes an
+  [OpenRouter](https://openrouter.ai) key, defaults to `z-ai/glm-4.6`,
+  and accepts `--model` for anything OpenRouter serves. Since 0.3.0 this
+  is the only aihawk entrypoint; headless one-shots run through the
+  assistant path above.
 
 The differentiating bet is the browser itself. Instead of driving a stock
 automation build over an automation protocol, AIHawk drives a Firefox
@@ -69,9 +70,10 @@ fails if that stops being true.
 
 **Operational features match real use.** `--proxy` takes HTTP or SOCKS5
 and the browser's timezone, locale and egress follow it; `--profile-dir`
-persists logins between runs; `--headed` shows the window; `do` slots
-into scripts and cron. The pieces you need to run it repeatedly are
-there, not left as exercises.
+persists logins between runs; `--headed` shows the window; and on the
+assistant path the same knobs ride the MCP registration as
+`STEALTHFOX_*` variables, which is what scripts and cron want. The
+pieces you need to run it repeatedly are there, not left as exercises.
 
 **It is genuinely open.** MIT license, the engine and its wrapper
 published as installable packages, and the agent code in this repository

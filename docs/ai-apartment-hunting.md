@@ -1,6 +1,6 @@
 ---
 title: "Using an AI agent to hunt for apartments"
-description: "What an agent genuinely does for an apartment search - read listings at volume, compare them against your criteria, watch for new ones - the workflow with uvx aihawk do, and the boundaries that keep the search from becoming scraping."
+description: "What an agent genuinely does for an apartment search - read listings at volume, compare them against your criteria, watch for new ones - the concrete workflow, and the boundaries that keep the search from becoming scraping."
 parent: "Using the Agent"
 nav_order: 10
 ---
@@ -81,18 +81,20 @@ minutes is a bill and a signature.
 
 ## The workflow, concretely
 
-AIHawk's headless entrypoint is built for repeatable single instructions
-(the README files it under "for scripts and cron"). A worked example, with
-the portal URL being whatever search-results page you have already set up
-by hand:
+The repeatable single instruction runs through your assistant's one-shot
+mode with AIHawk's browser attached over MCP (since aihawk 0.3.0 the aihawk
+command itself is interactive-only; the one-time MCP setup is on
+[the monitoring page](how-to-monitor-a-page-with-an-ai-agent.md)). A worked
+example, with the portal URL being whatever search-results page you have
+already set up by hand:
 
 ```bash
-uvx aihawk do "Go to <your saved search URL>. Read the first 15 listings.
+claude -p "Go to <your saved search URL>. Read the first 15 listings.
 My criteria: max 1600/month, 2 rooms, pets allowed, available within 60
 days, no ground floor without outdoor space. For each listing output one
 line: title, price, rooms, floor, verdict FIT/NEAR/NO with the deciding
 reason. Read the listing text, do not trust the summary card. If a fact is
-not stated, write UNKNOWN, do not guess." --profile-dir ~/.hawk-flat
+not stated, write UNKNOWN, do not guess."
 ```
 
 The prompt carries the craft, and three parts of it matter more than the
@@ -104,9 +106,9 @@ that fills gaps optimistically is worse than none, because a wrong "pets
 allowed" costs you a viewing trip.
 
 For the recurring version, put that command in cron or Task Scheduler,
-redirect stdout to a dated file, and keep `--profile-dir` stable so the
-session persists between runs. Once a day, or twice in a genuinely fast
-market. For interactive sessions - "open the third FIT and tell me what
+redirect stdout to a dated file, and set `STEALTHFOX_PROFILE_DIR` on the MCP
+registration so the session persists between runs. Once a day, or twice in a
+genuinely fast market. For interactive sessions - "open the third FIT and tell me what
 the photos show about the kitchen" - `uvx aihawk ui` gives you the same
 agent beside a live browser view, and if you already use Claude Code or
 Claude Desktop, the same browser attaches to your assistant instead
@@ -172,8 +174,9 @@ human reviews and submits. See
 All retrieved 2026-09-03.
 
 - The [AIHawk README](https://github.com/feder-cr/AIHawk#readme), for the
-  `uvx aihawk do` / `uvx aihawk ui` commands, the `--profile-dir` and
-  proxy behavior, and the scripts-and-cron framing.
+  `uvx aihawk ui` command, the MCP path for assistants, and the profile and
+  proxy behavior (updated for aihawk 0.3.0, which removed the `do`
+  subcommand).
 - [Rightmove's terms-of-use page](https://www.rightmove.co.uk/this-site/terms-of-use.html),
   for its stated prohibition on scraping its content, cited as the
   concrete example that listing portals restrict automated access.

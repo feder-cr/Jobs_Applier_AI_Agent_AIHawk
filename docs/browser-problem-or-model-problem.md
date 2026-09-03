@@ -88,9 +88,9 @@ fine:
 
 ## The procedure
 
-1. **Read the failed transcript first.** Both the interface and `aihawk do`
-   ran the same loop; the interface shows each step, what was called, and what
-   came back. Most failures are legible there, and the split is often obvious:
+1. **Read the failed transcript first.** The interface shows each step, what
+   was called, and what came back; on the assistant path the same record is
+   your assistant's own conversation. Most failures are legible there, and the split is often obvious:
    a block page in a tool result is browser-side, a wrong click on a healthy
    page is model-side.
 2. **Replay the failing step in placeholder mode.** Restart the interface with
