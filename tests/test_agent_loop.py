@@ -34,7 +34,7 @@ REAL SHAPES COPIED, AND WHERE THEY WERE READ
   it: `await mcp.list_tools()` returning a ListToolsResult, and
   `await mcp.call_tool(name, args)` returning a CallToolResult.
 
-  Tool names and schemas are the real ones: the server exposes exactly 14 tools
+  Tool names and schemas are the real ones, taken from the server itself
   (session_new_page, session_list_pages, session_select_page, session_close_page,
   browser_navigate, browser_read_text, browser_snapshot, browser_read_html,
   browser_take_screenshot, browser_click, browser_click_at, browser_type,
@@ -261,7 +261,7 @@ def test_a_tool_with_no_description_becomes_an_empty_string_not_none():
 def test_a_description_longer_than_1024_characters_is_truncated_to_1024():
     """OpenAI caps a function description at 1024 characters and this is not
     hypothetical: the real `browser_click_at` docstring measures 1124 characters
-    today, so one of the 14 shipped tools is truncated on every run.
+    today, so one of the shipped tools is truncated on every run.
 
     Known-bad: dropping the [:1024] slice, which makes the API reject the whole
     request, or truncating to a different length."""
@@ -795,7 +795,7 @@ async def test_an_error_flagged_result_is_still_fed_back_as_text():
 
 async def test_a_screenshot_reaches_the_model_as_a_placeholder_only():
     """End to end through the loop, not just through _result_text: the model asks
-    for browser_take_screenshot, which is one of the 14 advertised tools, and the
+    for browser_take_screenshot, which is one of the advertised tools, and the
     only thing that comes back is "[non-text result]". The image is dropped."""
     shot = mt.CallToolResult(
         content=[mt.ImageContent(type="image", data="aGk=", mimeType="image/png")]

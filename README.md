@@ -117,7 +117,7 @@ Claude Code, Claude Desktop, Cursor and anything similar can drive it directly:
 claude mcp add stealth --env STEALTHFOX_PROXY=http://user:pass@host:port -- uvx invisible-playwright-mcp
 ```
 
-Your client brings the model, and gets the same fourteen tools this interface
+Your client brings the model, and gets the same tools this interface
 uses. Nothing here has a private path to the browser - AIHawk is a client of
 that server like any other, which is the reason to trust that the tools are
 enough.

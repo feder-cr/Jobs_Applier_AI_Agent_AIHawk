@@ -2,7 +2,7 @@
 
 This used to live inside the MCP server and reach the browser through a Python
 object in the same process. It lives here now, and it reaches the browser the way
-everybody else does: over MCP, calling the same fourteen tools any agent gets.
+everybody else does: over MCP, calling the same tools any agent gets.
 The server went back to being only a server.
 
 That is not a tidier arrangement of the same code, it changes what is true about
@@ -383,6 +383,7 @@ const VERB = {
   browser_press_key:['Pressing','Pressed'],    browser_read_text:['Reading','Read'],
   browser_read_html:['Reading','Read'],        browser_snapshot:['Inspecting','Inspected'],
   browser_evaluate:['Evaluating','Evaluated'], browser_take_screenshot:['Capturing','Captured'],
+  browser_select_option:['Choosing','Chose'],
   session_new_page:['Opening tab','Opened tab'],   session_select_page:['Switching tab','Switched tab'],
   session_close_page:['Closing tab','Closed tab'], session_list_pages:['Listing tabs','Listed tabs']
 };
