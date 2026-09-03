@@ -108,7 +108,8 @@ came from, and it is now a general web agent. There are two ways in: add its MCP
 server (`invisible-playwright-mcp`) to an assistant that can run tools, such as
 Claude Code, Claude Desktop or Cursor, where the assistant brings the model, or run
 `uvx aihawk ui` with an OpenRouter key and get a chat interface with a live browser
-view (without a key it runs a placeholder mode that takes literal commands).
+view (the key is required; model-free browser driving is the underlying
+library's job).
 
 The structural difference from every other entry is the browser. Everything above
 drives Chromium, Chrome or a fork of them; AIHawk drives a Firefox patched at the

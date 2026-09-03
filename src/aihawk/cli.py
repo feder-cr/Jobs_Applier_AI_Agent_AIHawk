@@ -29,8 +29,10 @@ def main() -> None:
     """Drive a stealth browser with an LLM.
 
     The model comes from OpenRouter and nowhere else: pass --openrouter-key or
-    set OPENROUTER_API_KEY. Without one the interface still starts, on a
-    literal-command placeholder, which is enough to see it work.
+    set OPENROUTER_API_KEY. Without one the interface refuses to start - an
+    agent is a model with a browser, and there is no half of it to serve. To
+    drive the browser by hand without a model, use the invisible_playwright
+    library directly: same engine, Playwright's whole API.
 
     Said here rather than only in the subcommand because this is the first page
     anybody reads, and a key requirement discovered from an error message is a
@@ -40,8 +42,8 @@ def main() -> None:
 
 @main.command()
 @click.option("--openrouter-key", default=None,
-              help="OpenRouter API key (or env OPENROUTER_API_KEY). Without one "
-                   "the interface runs on the literal-command placeholder.")
+              help="OpenRouter API key (or env OPENROUTER_API_KEY). Required: "
+                   "the interface does not start without a model.")
 @click.option("--model", default=None, help="Model id (or env AIHAWK_MODEL).")
 @click.option("--host", default="127.0.0.1", show_default=True,
               help="Interface bind address. Leave it on loopback unless you mean it.")
@@ -50,27 +52,27 @@ def main() -> None:
 def ui(openrouter_key, model, host, port, proxy, seed, headed, binary, profile_dir):
     """Serve the two-pane interface: conversation left, live browser right.
 
-    The key is optional HERE and required for `do`, and the asymmetry is
-    deliberate. Without a key this runs the literal-command placeholder, which is
-    how the whole surface can be exercised - and its defects found - with no
-    model, no key and nothing spent. With a key it is the product.
+    Requires an OpenRouter key: an agent is a model with a browser, and
+    without the model there is nothing honest to serve. Driving the browser
+    by hand, no model and nothing spent, is the invisible_playwright
+    library's job - same engine, Playwright's whole API.
     """
-    from .brain import LiteralBrain, OpenRouterBrain
+    from .brain import OpenRouterBrain
     from .link import Link
     from .llm import make_client
     from .web import ChatService, build_app
 
     key = openrouter_key or os.environ.get("OPENROUTER_API_KEY")
-    if key:
-        mdl = resolve_model(model, os.environ)
-        brain = OpenRouterBrain(make_client(key), mdl)
-        label = mdl
-        click.echo("model    %s via %s" % (mdl, BASE_URL))
-    else:
-        brain = LiteralBrain()
-        label = "placeholder (no key)"
-        click.echo("model    none: literal commands only. Pass --openrouter-key "
-                   "for a real one.")
+    if not key:
+        raise click.ClickException(
+            "no OpenRouter key. Pass --openrouter-key or set "
+            "OPENROUTER_API_KEY. To drive the browser without a model, use "
+            "the invisible_playwright library directly: same engine, "
+            "Playwright's whole API.")
+    mdl = resolve_model(model, os.environ)
+    brain = OpenRouterBrain(make_client(key), mdl)
+    label = mdl
+    click.echo("model    %s via %s" % (mdl, BASE_URL))
 
     opts = {"proxy": proxy, "seed": seed, "headed": headed,
             "binary": binary, "profile_dir": profile_dir}

@@ -147,8 +147,8 @@ and restart Desktop. The block and file path live in that README on purpose.
 
 **Do I need an API key for this?** No. Your Claude subscription is the model;
 the server only adds the browser, and its config block contains no secret. The
-OpenRouter key belongs to a different way in, AIHawk's own interface, covered
-in [using AIHawk without an API key](using-aihawk-without-an-api-key.md).
+OpenRouter key belongs to a different way in, AIHawk's own interface
+(`uvx aihawk ui`), which requires one.
 
 **Why does the first instruction take so long?** The engine downloads on the
 first call that needs a page, about a quarter of a gigabyte, and nothing warns

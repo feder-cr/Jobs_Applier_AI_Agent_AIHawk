@@ -130,11 +130,11 @@ criteria above do not.
 **What model does AIHawk use by default?** `z-ai/glm-4.6`, via OpenRouter. Set
 `--model` or `AIHAWK_MODEL` to use anything else OpenRouter serves.
 
-**Do I need an OpenRouter account?** For the real agent, yes - the model comes
-from OpenRouter and nowhere else in the current source. Without a key, `aihawk
-ui` still runs on a
-[literal-command placeholder](using-aihawk-without-an-api-key.md), which spends
-nothing.
+**Do I need an OpenRouter account?** For AIHawk's own interface, yes - the
+model comes from OpenRouter and nowhere else in the current source, and since
+0.4.0 `aihawk ui` refuses to start without a key. The spend-nothing routes are
+your assistant over MCP (its subscription is the model) and the
+invisible_playwright library (no model at all).
 
 **Is a frontier model worth it for browser automation?** Only when the
 transcript shows model-side failures on a cheaper one. On tasks the default
@@ -171,7 +171,6 @@ All retrieved 2026-09-03.
   `tests/test_key_isolation.py` (the key never reaching the browser process).
 
 **See also:** [browser problem or model problem?](browser-problem-or-model-problem.md),
-[using AIHawk without an API key](using-aihawk-without-an-api-key.md),
 [agent retry loops and rate limits](agent-retry-loops-rate-limits.md), and the
 rest of [Using the Agent](guides-using-the-agent.md).
 

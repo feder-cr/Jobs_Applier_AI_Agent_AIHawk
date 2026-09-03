@@ -149,8 +149,8 @@ ChatGPT Work (2026). Outside OpenAI: the tools in the table above.
 
 **Is there a free Operator alternative?** The open-source agents are free
 software; you still pay for model tokens unless you run a local model where a
-tool supports one. AIHawk's UI runs keyless in a placeholder mode that takes
-literal commands, which is for testing the browser rather than doing real work.
+tool supports one. AIHawk's UI requires its key outright (since 0.4.0), on the
+argument that an agent without a model is not an agent at all.
 
 **Which alternative is most like Operator?** browser-use's cloud or Skyvern's
 cloud are closest in shape, a hosted browser doing your task. On your own
