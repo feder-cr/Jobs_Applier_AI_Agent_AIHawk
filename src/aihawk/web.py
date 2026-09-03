@@ -324,7 +324,7 @@ form{ padding:var(--s3) var(--s4) var(--s4); border-top:1px solid var(--line-1);
         <p>Tell it what to do, in a sentence. It opens the pages, reads them and
            clicks, and you watch on the right.</p>
         <p class="eg">go https://example.com<br>read h1<br>click #submit</p>
-        <p class="sm">Those five literal commands are the placeholder. Start with
+        <p class="sm">Literal commands only: that is the placeholder. Start with
            an OpenRouter key for a model that works it out for you.</p>
       </div>
     </div>

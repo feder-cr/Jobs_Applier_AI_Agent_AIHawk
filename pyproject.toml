@@ -8,6 +8,10 @@ version = "0.2.0"
 description = "Drive a stealth browser with an LLM from one command"
 readme = "README.md"
 requires-python = ">=3.11"
+# The README says MIT and nothing here did, so the PyPI page showed no licence
+# at all. Both siblings declare theirs.
+license = "MIT"
+license-files = ["LICENSE"]
 # The engine ships binaries for these two only, so a mac reader finds out at
 # the first browser call unless the index says so first.
 classifiers = [

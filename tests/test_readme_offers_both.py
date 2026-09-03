@@ -59,29 +59,85 @@ def test_both_ways_in_are_offered():
             "missing entirely" % way)
 
 
-def test_the_offer_comes_before_anything_else():
-    """Both commands in the first real section, not scattered down the page.
+#: How far down "immediately" reaches, in lines. A screen of rendered markdown
+#: is roughly this, and the requirement is about what a reader sees before
+#: deciding whether to keep scrolling.
+#:
+#: ⛔ This started as "within the first two sections" and that was wrong for a
+#: reason worth keeping: both commands begin with `uvx`, so the uv install has
+#: to come BEFORE the choice or neither column works. A section-index rule
+#: forbade the correct page. Counting lines measures what the requirement
+#: actually says; counting sections measured the shape it happened to have.
+FIRST_SCREEN = 45
 
-    The tolerance is two headings, not one, because a page may open with its own
-    title before the choice. Three would let the offer sit behind a features
-    section, which is where it was.
+
+def _where_the_offer_starts(text):
+    """(line number, heading) of the section that carries BOTH commands."""
+    lines = text.split(chr(10))
+    heads = [(i, l) for i, l in enumerate(lines, 1) if l.startswith("#")]
+    for pos, (line, heading) in enumerate(heads):
+        end = heads[pos + 1][0] if pos + 1 < len(heads) else len(lines) + 1
+        body = chr(10).join(lines[line - 1:end - 1])
+        if MCP_WAY in body and UI_WAY in body:
+            return line, heading.strip()
+    return None, None
+
+def test_the_offer_comes_within_the_first_screen():
+    """Where the OFFER begins, not where each command literal sits.
+
+    ⛔ The literal position is the wrong measurement and this test made that
+    mistake first. Both pages present the choice as a two-column HTML table, and
+    the table scaffolding puts twenty lines of markup between the heading and the
+    second command without costing the reader a single line on screen. Measured
+    that way the correct page failed. What a reader meets is the heading, so that
+    is what is measured.
+
+    Known-bad is what these pages looked like before 2026-09-03, and it is checked
+    rather than remembered: see the test below.
     """
+    line, heading = _where_the_offer_starts(README.read_text(encoding="utf-8"))
+    assert line is not None, "no single section offers both ways"
+    assert line <= FIRST_SCREEN, (
+        "the choice starts at line %d, under %r, past the first screen a reader "
+        "sees" % (line, heading))
+
+
+def test_the_check_fails_on_the_pages_as_they_used_to_be():
+    """The gate against a known-bad input, and the input is real history.
+
+    A position check that has only ever passed says nothing about whether it can
+    see a page where the offer is buried - which is the only page it exists to
+    reject.
+    """
+    buried = chr(10).join([
+        "# A project",
+        "",
+        "## Overview",
+        "",
+    ] + ["Prose about the project." for _ in range(60)] + [
+        "",
+        "## Already have an MCP client?",
+        "",
+        "Then you may not need this at all: `%s`." % MCP_WAY,
+        "",
+        "Otherwise `%s`." % UI_WAY,
+    ])
+    line, _ = _where_the_offer_starts(buried)
+    assert line is not None, "the helper cannot even find the offer"
+    assert line > FIRST_SCREEN, (
+        "a page with the offer %d lines down passes, so this check is blind" % line)
+
+
+def test_the_two_ways_are_offered_as_one_choice():
+    """In the SAME section, so they read as alternatives rather than as two
+    unrelated facts a reader has to notice and compare for themselves."""
     sections = _sections()
     found = {}
     for index, (heading, body) in enumerate(sections):
         for name, way in (("mcp", MCP_WAY), ("ui", UI_WAY)):
             if way in body and name not in found:
                 found[name] = (index, heading)
-
     assert set(found) == {"mcp", "ui"}, "missing: %s" % sorted({"mcp", "ui"} - set(found))
-
-    late = {n: h for n, (i, h) in found.items() if i > 2}
-    assert not late, (
-        "these ways in are offered too far down to be found: %s. The reader who "
-        "stops at the first screen must see both." % late)
-
-    # And in the SAME section, so they read as a choice rather than as two
-    # unrelated facts a reader has to notice and compare for themselves.
     assert found["mcp"][0] == found["ui"][0], (
         "the two ways are in different sections (%r and %r), so nothing on the "
         "page says they are alternatives" % (found["mcp"][1], found["ui"][1]))
