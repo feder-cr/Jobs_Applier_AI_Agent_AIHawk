@@ -69,9 +69,10 @@ sometimes and not others.
 Here is the fact this page exists to state plainly: AIHawk has no Google
 Sheets integration. Nothing in its source talks to a Google API, there is no
 credential to configure, and the agent has no file-writing tool at all. What
-the agent produces is its answer as text - in the interface, in the chat; from
-the command line, on stdout. That is not a gap waiting for a feature; it is
-the architecture: the agent extracts, and the spreadsheet imports.
+the agent produces is its answer as text in the interface's chat, and what
+the scheduled script produces is CSV on stdout. That is not a gap waiting
+for a feature; it is
+the architecture: the extraction produces text, and the spreadsheet imports.
 
 So the working pipeline has two short stages. First, extraction to CSV. For a
 one-off, the agent is the right tool and

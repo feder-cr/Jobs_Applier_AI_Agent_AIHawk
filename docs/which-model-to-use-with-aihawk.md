@@ -12,7 +12,7 @@ AIHawk brings the browser and you bring the model, from
 [OpenRouter](https://openrouter.ai) and nowhere else. If you set nothing, you get
 `z-ai/glm-4.6`: that is the default written into the source, and it sits at the
 cheap-and-capable end of the catalog rather than the flagship end. You override it
-with `--model` on either command, or the `AIHAWK_MODEL` environment variable, and
+with `--model` on `aihawk ui`, or the `AIHAWK_MODEL` environment variable, and
 any model id OpenRouter serves is legal. So the real question is not "which model
 does AIHawk support" - all of them - but which one is worth paying for on this
 kind of work, and that has a less obvious answer than the price sheet suggests.

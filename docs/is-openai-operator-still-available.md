@@ -62,8 +62,9 @@ through interfaces".
 
 **The computer-use API.** For developers, OpenAI's computer use tool in the
 Responses API drives a click-type-scroll loop over screenshots. It left its
-research-preview phase: the current guide documents it as a generally
-available tool (named `computer`) driven by current models such as `gpt-5.6`,
+research-preview phase: the current guide documents the tool (named
+`computer`) driven by the current model ids it lists (`gpt-5.6-sol` and
+`gpt-6-astra`, checked 2026-09-04),
 with a migration path from the old `computer-use-preview` model. It is a
 building block, not a product: you supply the browser or VM it acts on.
 

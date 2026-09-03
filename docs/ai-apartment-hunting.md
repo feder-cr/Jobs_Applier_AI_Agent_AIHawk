@@ -162,9 +162,9 @@ on [the blocking page](why-does-my-ai-agent-get-blocked.md) before blaming
 any one of them. A sweep at scraper volume deserves the block, and this
 page is not the recipe for one.
 
-**Can it fill out rental application forms too?** The same way it works
-job forms: draft from your real information, stop at anything binding,
-human reviews and submits. See
+**Can it fill out rental application forms too?** Yes, with the same
+discipline as any form: draft from your real information, stop at anything
+binding, human reviews and submits. See
 [getting an AI agent to fill out forms](ai-agent-fill-out-forms.md).
 
 ## Sources
