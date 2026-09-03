@@ -189,6 +189,11 @@ All retrieved 2026-09-03.
   and the stdout behavior of `aihawk do` in
   [`src/aihawk/cli.py`](https://github.com/feder-cr/AIHawk/blob/main/src/aihawk/cli.py).
 
+A complete worked run of this task shape, with the real transcript, the two
+screenshots the session returned and the 32-row CSV it produced, is in the
+repository:
+[extracting a category to CSV](https://github.com/feder-cr/AIHawk/tree/main/articles/extracting-a-category-to-csv).
+
 **See also:** [AI browser agents vs traditional scraping](ai-browser-agents-vs-traditional-scraping.md),
 [monitoring a page for changes](how-to-monitor-a-page-with-an-ai-agent.md),
 [what is an AI web agent?](ai-web-agent-explained.md), and the rest of
