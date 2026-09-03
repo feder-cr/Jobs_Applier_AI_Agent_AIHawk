@@ -53,10 +53,11 @@ successor; OpenAI's help pages point long multi-step tasks at ChatGPT Work,
 and browser-based agentic work at the ChatGPT desktop app and Chrome
 extension. The full churn timeline is on
 [Is OpenAI Operator still available?](is-openai-operator-still-available.md).
-For developers, OpenAI's own entry in this architecture is the
-`computer-use-preview` model in the Responses API - a research preview, gated
-to usage tiers 3-5, and notably the same shape as Anthropic's approach: a
-screenshot loop over an environment you provide.
+For developers, OpenAI's own entry in this architecture is the computer use
+tool in the Responses API - out of its research-preview phase and generally
+available, driven by current models such as `gpt-5.6`, and notably the same
+shape as Anthropic's approach: a screenshot loop over an environment you
+provide.
 
 **Claude computer use: generally available on the API.** The current toolset
 version (`computer_toolset_20260801`) needs no beta header and is supported by
@@ -73,8 +74,9 @@ browser.
 ## What each costs
 
 Operator's cost model was a subscription: it launched inside ChatGPT Pro. Its
-API descendant, `computer-use-preview`, is priced per token ($3 per million
-input, $12 per million output, per OpenAI's model page).
+API descendant, the computer use tool, is priced like any Responses API call:
+standard token pricing for the model that drives it, multiplied by the
+screenshot-heavy context a computer-use loop consumes.
 
 Claude computer use is standard API token pricing with no special rate, and
 the practical cost driver is screenshots: Anthropic's docs put each one at
@@ -104,7 +106,7 @@ by design rather than a defect.
 reference container is a recognizable environment:
 [a headless server machine answers a page's questions differently from a
 desktop](https://github.com/feder-cr/invisible_playwright/wiki/headless-browser-agent-on-a-server),
-and [an agent's pacing is its own signal](https://github.com/feder-cr/invisible_playwright/wiki/ai-agent-timing-signal).
+and [an agent's pacing is its own signal](ai-agent-timing-signal.md).
 With computer use you at least own the environment and can improve it; with a
 hosted product you could not.
 
@@ -138,7 +140,7 @@ at [Open-source Operator-style agents](openai-operator-open-source.md).
 
 **Which is better, Operator or Claude computer use?** The question expired:
 Operator no longer exists. Its architectural heirs at OpenAI are ChatGPT's
-built-in agentic browsing and the tier-gated `computer-use-preview` API.
+built-in agentic browsing and the now generally available computer use API.
 
 **Is Claude computer use a product I can just use?** Not by itself: it is an
 API tool, and you supply the environment and the agent loop. The
@@ -169,7 +171,7 @@ for the screenshot-loop architecture in open source.
 
 - [Anthropic: computer use tool documentation](https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool), retrieved 2026-09-03; quotes, toolset version, model support, screenshot token figures and safety guidance are from this page.
 - [Wikipedia: OpenAI Operator](https://en.wikipedia.org/wiki/OpenAI_Operator), retrieved 2026-09-03, for launch and shutdown dates and the OSWorld figure.
-- [OpenAI help: ChatGPT agent](https://help.openai.com/en/articles/11752874-chatgpt-agent), [OpenAI computer use guide](https://platform.openai.com/docs/guides/tools-computer-use) and [computer-use-preview model page](https://developers.openai.com/api/docs/models/computer-use-preview), surfaced via search 2026-09-03.
+- [OpenAI help: ChatGPT agent](https://help.openai.com/en/articles/11752874-chatgpt-agent), surfaced via search 2026-09-03, and the [OpenAI computer use guide](https://developers.openai.com/api/docs/guides/tools-computer-use), fetched 2026-09-03: generally available, driven by current models, migration section from `computer-use-preview`.
 - [OpenAI community: "Agent Mode was removed with no real replacement"](https://community.openai.com/t/agent-mode-was-removed-with-no-real-replacement/1389601), retrieved 2026-09-03.
 - Coverage of Claude in Chrome's general availability, surfaced via search 2026-09-03, including [Engadget on Cowork in the Chrome sidebar](https://www.engadget.com/2235919/claude-cowork-can-now-run-in-a-chrome-sidebar/).
 

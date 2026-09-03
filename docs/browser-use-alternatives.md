@@ -33,7 +33,7 @@ stack whole: the same build type, the same driving protocol, the same
 well-studied tells. If your problem is specifically that this stack is being
 recognized, no browser-use setting reaches it. The mechanics are documented on
 the engine wiki:
-[what browser-use configuration can and cannot change](https://github.com/feder-cr/invisible_playwright/wiki/browser-use-detection)
+[what browser-use configuration can and cannot change](browser-use-getting-blocked.md)
 and [why a bundled Chromium is not Chrome](https://github.com/feder-cr/invisible_playwright/wiki/chromium-is-not-chrome).
 
 ### The detection surface, and where it actually lives
@@ -158,7 +158,7 @@ for whether you need an agent at all.
 
 - The [browser-use repository](https://github.com/browser-use/browser-use), retrieved 2026-09-03: stars, license, description, model support and the cloud material.
 - [SiliconANGLE: Browser Use raises $17M](https://siliconangle.com/2025/03/23/browser-use-raises-17m-help-steer-ai-agents-internet/), surfaced via search 2026-09-03.
-- The [invisible_playwright wiki's browser-use configuration analysis](https://github.com/feder-cr/invisible_playwright/wiki/browser-use-detection), which reads `BrowserProfile`'s fields from browser-use's own source; our sibling project, maintained by us.
+- [browser-use getting blocked: what you can and cannot change](browser-use-getting-blocked.md), this wiki's own analysis, which reads `BrowserProfile`'s fields from browser-use's source.
 - The [Skyvern](https://github.com/Skyvern-AI/skyvern), [Agent-S](https://github.com/simular-ai/Agent-S) and [AIHawk](https://github.com/feder-cr/AIHawk) repositories, retrieved 2026-09-03.
 
 ---

@@ -30,11 +30,15 @@ theirs or ours.
 
 ## Two rules that are not style
 
-**No target sites.** No job board, retailer, airline or booking site by name,
-in the prose, in a screenshot, or in a recording. Not because the automation is
-secret, but because naming who is being automated against turns a guide into a
-target list. `books.toscrape.com` exists for exactly this and is fair game;
-otherwise use a page you serve yourself.
+**Site names are for subjects, not examples.** A mainstream platform may be
+the declared subject of a guide - a piece about automating a specific site,
+written in the open, honest about what that site's terms say and what the
+reader risks. What stays out is the other thing: naming sites incidentally as
+the targets your demo happens to run against, which turns a guide into a
+target list. For demos and recordings, `books.toscrape.com` exists for exactly
+this and is fair game; otherwise use a page you serve yourself. A guide about
+a named site never includes instructions aimed at defeating that specific
+site's protections.
 
 **No proxy providers, and no credentials.** Not in a config block, not in a URL
 in a screenshot, not in a terminal recording. A recording is the easiest place
