@@ -4,6 +4,9 @@ Guides on using AIHawk, with worked examples.
 
 - [Extracting a category to CSV](extracting-a-category-to-csv/) - a 32-book
   category over two pages, driven over MCP, with the wrong turn left in.
+- [Web research, audited](web-research-audited/) - the agent counts 60 prices,
+  a model-free script counts the same pages, and the two answers are printed
+  side by side.
 
 One article per folder, so the piece and the things it references travel
 together:
