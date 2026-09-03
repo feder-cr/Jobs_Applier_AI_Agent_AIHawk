@@ -1,0 +1,68 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# publish-wiki.yml - mirror the docs/ site into the GitHub wiki on every release.
+#
+# The wiki is a SEPARATE git repo (<repo>.wiki.git) with no Jekyll front matter
+# and its own _Sidebar.md navigation, so this is a render, not a copy:
+# scripts/build_wiki.py strips the front matter, rewrites [x](slug.md) internal
+# links to the wiki's extensionless form, names each page by its slug (index.md
+# becomes Home.md), and regenerates _Sidebar.md from the parent/nav_order tree.
+#
+# It runs on a published release (the docs the release ships are what the wiki
+# should show) and on manual dispatch. The wiki checkout is wiped and rebuilt
+# each run so a page deleted from docs/ also disappears from the wiki; nothing
+# but generated output is ever committed.
+#
+# AUTH. Pushing to <repo>.wiki.git needs contents:write. The built-in
+# GITHUB_TOKEN carries it here; if a run ever gets a 403 pushing the wiki
+# (some org policies withhold wiki write from GITHUB_TOKEN), set a PAT with
+# `repo` scope as the secret WIKI_TOKEN and it is used instead. No long-lived
+# credential is committed either way.
+name: publish-wiki
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-wiki
+  cancel-in-progress: true
+
+jobs:
+  publish-wiki:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo (docs + the converter)
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Render docs/ into a wiki build directory
+        run: python scripts/build_wiki.py docs wiki_build
+
+      - name: Publish to the wiki
+        env:
+          WIKI_PUSH_TOKEN: ${{ secrets.WIKI_TOKEN != '' && secrets.WIKI_TOKEN || github.token }}
+        run: |
+          set -euo pipefail
+          repo="${{ github.repository }}"
+          git clone "https://x-access-token:${WIKI_PUSH_TOKEN}@github.com/${repo}.wiki.git" wiki
+          # wipe old generated pages (keep .git) so deletions propagate
+          find wiki -maxdepth 1 -name '*.md' -delete
+          cp wiki_build/*.md wiki/
+          cd wiki
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "wiki already up to date"
+          else
+            git commit -m "docs: sync wiki from docs/ (${{ github.ref_name }})"
+            git push origin HEAD:master
+          fi
