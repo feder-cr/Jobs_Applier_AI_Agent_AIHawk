@@ -36,8 +36,8 @@ removal churn of 2025-2026 is the cautionary tale, told with dates on
 key and let you choose the model. You pay per token, you can switch providers,
 and the agent keeps working when a vendor reorganizes a product line.
 
-**You build the loop.** Claude computer use and OpenAI's
-`computer-use-preview` are API tools: the vendor supplies the model's ability
+**You build the loop.** Claude computer use and OpenAI's computer use tool
+are API offerings: the vendor supplies the model's ability
 to click and type, you supply everything else. Maximum control, real
 engineering cost - the architecture is dissected on
 [OpenAI Operator vs Claude computer use](openai-operator-vs-claude-computer-use.md).

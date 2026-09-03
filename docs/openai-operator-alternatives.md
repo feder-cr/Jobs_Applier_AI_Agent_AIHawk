@@ -71,8 +71,9 @@ desktop app and the ChatGPT Chrome extension, where Atlas's capabilities were
 folded when it shut down, and ChatGPT Work (launched 9 July 2026) handles
 longer multi-step tasks across apps and files. Users on OpenAI's own forum have
 pointed out that none of these reproduces the old agent mode's interactive
-website navigation exactly. Developers can build with the `computer-use-preview`
-model in the Responses API, a research preview limited to higher usage tiers.
+website navigation exactly. Developers can build with the computer use tool in
+the Responses API, now generally available and driven by current models (the
+old `computer-use-preview` model has a documented migration path to it).
 
 **Anthropic's answer** comes in two shapes. Claude in Chrome, the browser
 extension, became generally available for paid Claude plans on 26 August 2026

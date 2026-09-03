@@ -60,9 +60,11 @@ makes exactly that complaint: Work does not replicate "spawned a virtual
 computer, opened a real browser, visually interpret rendered websites, clicked
 through interfaces".
 
-**The computer-use API.** For developers, the `computer-use-preview` model in
-the Responses API drives a click-type-scroll loop over screenshots. It is a
-research preview, gated to higher usage tiers, priced per token. It is a
+**The computer-use API.** For developers, OpenAI's computer use tool in the
+Responses API drives a click-type-scroll loop over screenshots. It left its
+research-preview phase: the current guide documents it as a generally
+available tool (named `computer`) driven by current models such as `gpt-5.6`,
+with a migration path from the old `computer-use-preview` model. It is a
 building block, not a product: you supply the browser or VM it acts on.
 
 Whether any of these is "Operator, still available" depends on which half of
@@ -126,9 +128,9 @@ Codex. It never left macOS while it lived, per coverage of the shutdown.
 subscription route today is ChatGPT's built-in browsing agent and ChatGPT
 Work.
 
-**Is there an API version?** The `computer-use-preview` model in the
-Responses API, a tier-gated research preview where you provide the
-environment it controls.
+**Is there an API version?** Yes: the computer use tool in the Responses
+API, now generally available and driven by current models, where you provide
+the environment it controls.
 
 **What is the closest replacement I can run myself?** An open-source browser
 agent with your own model key - see
@@ -148,7 +150,7 @@ replacement that will not need replacing.
 - [OpenAI community: "Agent Mode was removed with no real replacement"](https://community.openai.com/t/agent-mode-was-removed-with-no-real-replacement/1389601), retrieved 2026-09-03, for the removal, the "use Work" guidance, and the quoted capability description.
 - [TechCrunch: OpenAI is shutting down Atlas](https://techcrunch.com/2026/07/09/openai-is-shutting-down-atlas-but-its-ai-browser-ambitions-are-still-growing/) and [Search Engine Land: OpenAI sets Aug. 9 end date for ChatGPT Atlas](https://searchengineland.com/openai-chatgpt-atlas-deprecation-482003), surfaced via search 2026-09-03.
 - [Bloomberg: OpenAI launches ChatGPT Work](https://www.bloomberg.com/news/articles/2026-07-09/openai-unveils-chatgpt-work-agent-to-field-tasks-for-hours) and [The Next Web on the same launch](https://thenextweb.com/news/openai-chatgpt-work-agent-launch), surfaced via search 2026-09-03.
-- [OpenAI computer use guide](https://platform.openai.com/docs/guides/tools-computer-use) and [computer-use-preview model page](https://developers.openai.com/api/docs/models/computer-use-preview), surfaced via search 2026-09-03.
+- [OpenAI computer use guide](https://developers.openai.com/api/docs/guides/tools-computer-use), fetched 2026-09-03: the tool is generally available, driven by current models, with a migration section from the old `computer-use-preview`.
 
 ---
 
