@@ -8,8 +8,7 @@ nav_order: 1
 AIHawk is an AI agent with a real browser: you say what you want in plain
 language, it goes and does it on the actual web. This wiki is the reading
 room around it - what an AI web agent is, how the tools in this space compare,
-what to do when an agent gets blocked, and the job-application automation this
-project grew out of.
+what to do when an agent gets blocked, and how to put an agent to work.
 
 The [README](https://github.com/feder-cr/AIHawk#readme) is the fastest way to
 run AIHawk. The pages here are for the questions that come before and after:
@@ -24,9 +23,6 @@ underneath.
 - **[When the Agent Gets Blocked](guides-when-the-agent-gets-blocked.md)** -
   challenge pages, rate limits, timing tells, and which of those the browser
   can fix versus which are yours.
-- **[Job Application Automation](guides-job-application-automation.md)** -
-  where this project started: automating application flows with Claude,
-  ChatGPT, or plain Python, and what is realistic today.
 - **[Using the Agent](guides-using-the-agent.md)** - task-shaped guides for
   putting an agent to work.
 

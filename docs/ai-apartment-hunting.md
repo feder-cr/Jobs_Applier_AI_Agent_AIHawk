@@ -45,11 +45,9 @@ you.
 **The agent reads; you contact.** Inquiries to landlords and agents are
 messages sent in your name about a place you might live. The agent can
 draft one from a listing's details; a human sends it. Auto-sending
-inquiries at volume is the rental-market version of the spray-application
-pattern whose costs
-[this project documented on itself](open-source-job-application-bot.md),
-and it burns the same thing: your credibility with the people you need to
-say yes.
+inquiries at volume is the rental-market version of the spray pattern, and
+it burns the same thing every volume play burns: your credibility with the
+people you need to say yes.
 
 ## What the agent actually does
 
