@@ -37,7 +37,10 @@ def _sections():
     """(heading, body) pairs, in order. The lead-in before the first heading is
     returned under an empty heading, because a logo block is not a section."""
     text = README.read_text(encoding="utf-8")
-    parts = re.split(r"^(#{1,3} .*)$", text, flags=re.M)
+    # H1 and H2 only. A page may split the choice into "### 1." and "### 2."
+    # under one heading - that is the same choice, presented well, and an
+    # earlier version of this file called it two sections and went red on it.
+    parts = re.split(r"^(#{1,2} .*)$", text, flags=re.M)
     out = [("", parts[0])]
     for i in range(1, len(parts), 2):
         out.append((parts[i].strip(), parts[i + 1]))
@@ -74,7 +77,7 @@ FIRST_SCREEN = 45
 def _where_the_offer_starts(text):
     """(line number, heading) of the section that carries BOTH commands."""
     lines = text.split(chr(10))
-    heads = [(i, l) for i, l in enumerate(lines, 1) if l.startswith("#")]
+    heads = [(i, l) for i, l in enumerate(lines, 1) if re.match(r"#{1,2} ", l)]
     for pos, (line, heading) in enumerate(heads):
         end = heads[pos + 1][0] if pos + 1 < len(heads) else len(lines) + 1
         body = chr(10).join(lines[line - 1:end - 1])
