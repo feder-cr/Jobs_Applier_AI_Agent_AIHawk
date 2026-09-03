@@ -244,7 +244,7 @@ EXPECTED_TOOLS = {
     "session_close_page", "browser_navigate", "browser_read_text",
     "browser_snapshot", "browser_read_html", "browser_take_screenshot",
     "browser_click", "browser_click_at", "browser_type", "browser_press_key",
-    "browser_evaluate",
+    "browser_evaluate", "browser_select_option",
 }
 
 
@@ -470,7 +470,7 @@ def _ids(snapshot):
 # --- the tools the model is handed -----------------------------------------
 
 @pytest.mark.ui
-def test_the_live_server_exposes_exactly_the_fourteen_documented_tools(browser):
+def test_the_live_server_exposes_exactly_the_documented_tools(browser):
     """The tool set the agent converts is the one the README promises.
 
     Known-bad: rename `browser_read_text` upstream, or add a fifteenth tool,
@@ -482,7 +482,10 @@ def test_the_live_server_exposes_exactly_the_fourteen_documented_tools(browser):
     assert names == EXPECTED_TOOLS, "tool set drifted: %r" % (names ^ EXPECTED_TOOLS,)
 
     defs = mcp_tools_to_openai(browser.tools)
-    assert len(defs) == 14
+    # Derived, not typed. The literal here said 14 while the set above said
+    # what it said, so adding a tool meant editing a number in a second
+    # place - and the number is the half nobody remembers.
+    assert len(defs) == len(EXPECTED_TOOLS)
     for one in defs:
         assert one["type"] == "function"
         assert one["function"]["name"] in EXPECTED_TOOLS
@@ -569,17 +572,30 @@ def test_a_checkbox_and_a_select_reach_the_page_state(browser, site):
     assert browser.js("() => { return document.querySelector('#agree').checked; }") is True
     assert browser.call("browser_read_text", selector="#state") == "fruit=apple agree=yes"
 
-    # There is no select_option tool in the fourteen, so a select is set the
-    # only way the tool set allows: through browser_evaluate.
-    chosen = browser.js(
-        "() => { var s = document.querySelector('#fruit'); s.value = 'pear';"
-        " s.dispatchEvent(new Event('change', { bubbles: true })); return s.value; }"
-    )
-    assert chosen == "pear"
+    # ⛔ A SELECT IS SET WITH THE SELECT TOOL, and this assertion used to say the
+    # opposite. It read "There is no select_option tool, so a select is set the
+    # only way the tool set allows: through browser_evaluate" - true when it was
+    # written, and it meant the suite was pinning the exact behaviour that got a
+    # real model into trouble. `s.value = 'pear'` reaches the page with no
+    # keystroke and no trusted event, which is the one thing this stack exists to
+    # avoid, and browser_evaluate refuses it now.
+    #
+    # The tool is asked for the option by its LABEL here, because that is what a
+    # model reads off a screenshot or a snapshot. Matching by value is checked
+    # elsewhere; what matters here is that the humanised path is the one taken.
+    browser.call("browser_select_option", selector="#fruit", value="Pear")
     assert browser.call("browser_read_text", selector="#state") == "fruit=pear agree=yes"
     assert browser.js(
         "() => { return document.querySelector('#fruit').selectedOptions[0].textContent; }"
     ) == "Pear"
+
+    # And the shortcut is now closed rather than merely unused: a model that
+    # tries it is told so, and told what to use instead.
+    with pytest.raises(Exception) as refused:
+        browser.js("() => { document.querySelector('#fruit').value = 'apple'; }")
+    assert "browser_select_option" in str(refused.value), refused.value
+    assert browser.call("browser_read_text", selector="#state") == "fruit=pear agree=yes", (
+        "the refused expression changed the page anyway")
 
 
 @pytest.mark.ui

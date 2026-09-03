@@ -70,10 +70,21 @@ class Conversation:
     gets the old one-shot behaviour for free.
     """
 
-    def __init__(self, client, model: str, *, max_turns: int = 25) -> None:
+    #: Ceiling on ONE reply, and it is set rather than left to the provider.
+    #: Without it the provider assumes the model's maximum - 65536 on a current
+    #: OpenAI model - and a credit-limited key is refused with a 402 before any
+    #: work happens, quoting a token budget rather than naming the task. It is
+    #: also the wrong shape for this loop: a turn is a sentence of reasoning and
+    #: a tool call, not an essay, and the only turn that wants room is the last
+    #: one. Generous for that, sixteen times smaller than the default.
+    MAX_TOKENS = 8192
+
+    def __init__(self, client, model: str, *, max_turns: int = 25,
+                 max_tokens: int = MAX_TOKENS) -> None:
         self.client = client
         self.model = model
         self.max_turns = max_turns
+        self.max_tokens = max_tokens
         self.messages: List[dict] = [{"role": "system", "content": SYSTEM_PROMPT}]
         self.tool_defs: Optional[List[dict]] = None
         self.usage = {"prompt": 0, "completion": 0, "calls": 0, "last_prompt": 0}
@@ -110,6 +121,7 @@ class Conversation:
             resp = self.client.chat.completions.create(
                 model=self.model, messages=self.messages,
                 tools=self.tool_defs, tool_choice="auto", temperature=0,
+                max_tokens=self.max_tokens,
             )
             self._note_usage(resp)
             await say("usage", json.dumps(self.usage))
@@ -149,8 +161,9 @@ class Conversation:
         raise RuntimeError(f"task did not finish within max_turns={self.max_turns}")
 
 
-async def run_task(mcp, task: str, *, client, model: str, max_turns: int = 25) -> str:
+async def run_task(mcp, task: str, *, client, model: str, max_turns: int = 25,
+                   max_tokens: int = Conversation.MAX_TOKENS) -> str:
     """One instruction, one answer, no narration. What `aihawk do` runs."""
     tools = (await mcp.list_tools()).tools
-    convo = Conversation(client, model, max_turns=max_turns)
+    convo = Conversation(client, model, max_turns=max_turns, max_tokens=max_tokens)
     return await convo.run(task, mcp.call_tool, tools)

@@ -118,15 +118,6 @@ def test_windows_normalises_a_lowercase_name_so_the_exact_pop_still_catches_it(m
     assert values_carrying(env, KEY) == []
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "REAL GAP, not an accepted trade-off: child_env pops one exact name. A "
-        "lowercase variable survives on any case-sensitive platform (POSIX) and "
-        "through any caller that passes a plain dict. Delete this marker when "
-        "child_env drops names case-insensitively."
-    ),
-)
 def test_a_case_variant_name_in_a_plain_mapping_is_stripped_too():
     """Known-bad is the current code: `env.pop("OPENROUTER_API_KEY", None)`
     against a mapping holding `openrouter_api_key`."""
@@ -134,16 +125,6 @@ def test_a_case_variant_name_in_a_plain_mapping_is_stripped_too():
     assert values_carrying(env, KEY) == []
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "REAL GAP: child_env removes the key by NAME and never scans values, so "
-        "a duplicate under a second name reaches the browser child. Setting "
-        "OPENAI_API_KEY to an OpenRouter key is common practice, since the "
-        "client is OpenAI-compatible. Delete this marker when child_env drops "
-        "every variable whose value equals the resolved key."
-    ),
-)
 def test_a_duplicate_of_the_key_under_another_name_is_stripped_too():
     """Known-bad is the current code: the same secret under OPENAI_API_KEY is
     copied straight into the child environment."""
@@ -151,6 +132,86 @@ def test_a_duplicate_of_the_key_under_another_name_is_stripped_too():
     assert values_carrying(env, KEY) == []
 
 
+
+
+# ── what the mutation test asked for ────────────────────────────────────────
+#
+# The two xfails above this line were deleted when child_env started removing by
+# value as well as by name. Mutating that code afterwards showed the suite was
+# thinner than it looked: four of five mutations survived, and two of them
+# survived because nothing here exercised the path at all.
+#
+# The rest survived because child_env removes the key three ways that overlap:
+# collection is case-insensitive, removal by name is case-insensitive, and
+# removal also matches by VALUE. Break any one and a lowercase variable is
+# still removed by another, so the guarantee holds and the suite is right to
+# stay green. Breaking two together does fail, which is what says the
+# redundancy is real rather than a gate that cannot see.
+#
+# So these tests pin the GUARANTEE - after child_env, no variable carries the
+# key, whatever it was called - and not the three mechanisms. Pinning each
+# mechanism would assert the implementation, and would go red on a rewrite
+# that kept the promise.
+
+
+def test_a_key_that_was_never_in_the_environment_still_scrubs_its_copies():
+    """The command-line case, which reading the environment cannot cover.
+
+    `--openrouter-key` puts the key in no variable at all, so there is nothing
+    for child_env to find by name - while a copy of that same string under
+    OPENAI_API_KEY is sitting right there. This is why child_env takes `key`.
+
+    Known-bad is the version that does not: drop the `key` parameter from the
+    collection and this environment reaches the browser with the secret in it.
+    """
+    env = child_env({}, {"PATH": "/x", "OPENAI_API_KEY": KEY}, key=KEY)
+    assert values_carrying(env, KEY) == []
+    assert env["PATH"] == "/x", "it removed more than the secret"
+
+
+def test_a_lowercase_variable_and_its_copy_both_go():
+    """The POSIX case with a copy, which neither half covers alone.
+
+    A lowercase `openrouter_api_key` is a different variable to the shell and
+    the same secret to anything reading the process environment, and the copy
+    under a second name can only be found by matching the value.
+    """
+    env = child_env({}, {"PATH": "/x", "openrouter_api_key": KEY,
+                         "OPENAI_API_KEY": KEY})
+    assert values_carrying(env, KEY) == []
+    assert env["PATH"] == "/x"
+
+
+def test_an_empty_variable_is_not_treated_as_a_secret():
+    """Otherwise a guard that removes by value removes the whole environment.
+
+    Two things stop it, and the second one was nearly deleted for looking
+    redundant. Collection filters on the value being truthy, and `if key:`
+    rejects an empty key; `secrets.discard("")` then catches what either of
+    those would let through.
+
+    Mutating `discard` away alone changes nothing, which read as dead code and
+    was written up as dead code here. It is not: mutate away the truthiness
+    filter as well and this test fails, because the empty string becomes a
+    secret and every empty variable in the environment matches it. Each line
+    is the other's backstop, and a single-line mutation cannot tell the
+    difference between a backstop and a spare part.
+    """
+    env = child_env({}, {"PATH": "/x", "EMPTY": "", "OPENROUTER_API_KEY": ""},
+                    key="")
+    assert env["PATH"] == "/x"
+    assert env["EMPTY"] == "", "an empty variable was mistaken for the secret"
+
+
+def test_the_options_still_arrive_when_the_environment_is_being_scrubbed():
+    """The scrub rewrites the dict the options are then written into, so the two
+    halves meet. A filter that returned a new mapping and dropped the writes
+    would leave the browser with no proxy and no seed, silently."""
+    env = child_env({"proxy": "socks5://proxy.example.com:1080", "seed": 4242},
+                    {"OPENROUTER_API_KEY": KEY, "PATH": "/x"})
+    assert env["STEALTHFOX_PROXY"] == "socks5://proxy.example.com:1080"
+    assert env["STEALTHFOX_SEED"] == "4242"
+    assert values_carrying(env, KEY) == []
 # ---------------------------------------------------------------------------
 # what SHOULD reach the child does
 # ---------------------------------------------------------------------------

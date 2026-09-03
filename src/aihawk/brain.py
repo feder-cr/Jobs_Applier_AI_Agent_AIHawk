@@ -4,7 +4,8 @@ The shell was built with this slot deliberately empty and a stub in it, so that
 the seam a model plugs into would be exercised rather than imagined. This module
 fills the slot. There are two implementations and both are real:
 
-`LiteralBrain` understands five literal commands and no language at all. It is
+`LiteralBrain` understands a handful of literal commands and no language at all.
+It is
 not a fallback for a missing key and it is not a demo prop: it is how the whole
 surface can be driven, and tested, with no model, no key and no spending. When
 something looks wrong in the UI, being able to issue exactly one action and see

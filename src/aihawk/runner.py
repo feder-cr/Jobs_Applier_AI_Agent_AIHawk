@@ -13,18 +13,58 @@ or be wrong once.
 """
 from __future__ import annotations
 
-from typing import Any, Mapping
+from typing import Any, Mapping, Optional
 
 
-def child_env(opts: Mapping[str, Any], base_env: Mapping[str, str]) -> dict:
+#: The one name the key is expected under. Compared case-insensitively, because
+#: on POSIX `openrouter_api_key` is a different variable to the shell and the
+#: same secret to anyone reading the process environment.
+KEY_VARIABLE = "OPENROUTER_API_KEY"
+
+
+def child_env(opts: Mapping[str, Any], base_env: Mapping[str, str],
+              *, key: Optional[str] = None) -> dict:
     """The environment the browser server is started with.
 
-    The pop is the point. Everything else is options travelling under the names
-    the engine reads, and an absent option adds no variable at all rather than an
-    empty one, because an empty STEALTHFOX_PROXY is not the same as no proxy.
+    The removal is the point. Everything else is options travelling under the
+    names the engine reads, and an absent option adds no variable at all rather
+    than an empty one, because an empty STEALTHFOX_PROXY is not the same as no
+    proxy.
+
+    ⛔ IT REMOVES BY VALUE AS WELL AS BY NAME, and the two are not the same
+    guarantee. Popping one exact name left the secret reachable two ways, both
+    ordinary rather than exotic:
+
+      * a lowercase `openrouter_api_key`, which survives on any case-sensitive
+        platform, and this product runs on Linux;
+      * the same string kept under a SECOND name. `OPENAI_API_KEY` holding an
+        OpenRouter key is normal practice here, because the client is
+        OpenAI-compatible and talks to OpenRouter through it.
+
+    Neither is theoretical: the leak reaches the browser itself, not just the
+    MCP server. `invisible_playwright._session.build_env` starts from the
+    server process's own environment and hands that to the Firefox launch, so
+    whatever survives here is inherited by the browser.
+
+    Both were recorded as strict xfails in `tests/test_key_isolation.py`, each
+    naming what would close it. This is that, so those markers are gone.
+
+    `key` is the resolved key when the caller has one - passed on the command
+    line, it never appears in `base_env` at all, so a copy of it under another
+    name could not be found by reading the environment alone.
     """
-    env = dict(base_env)
-    env.pop("OPENROUTER_API_KEY", None)   # the child (browser server) never needs it
+    secrets = {value for name, value in base_env.items()
+               if name.upper() == KEY_VARIABLE and value}
+    if key:
+        secrets.add(key)
+
+    # An empty secret would match every empty variable, which is how a guard
+    # like this turns into "delete most of the environment".
+    secrets.discard("")
+
+    env = {name: value for name, value in base_env.items()
+           if name.upper() != KEY_VARIABLE and value not in secrets}
+
     if opts.get("proxy"):
         env["STEALTHFOX_PROXY"] = str(opts["proxy"])
     if opts.get("seed") is not None:
@@ -49,7 +89,7 @@ async def drive(task: str, *, opts: Mapping[str, Any], key: str, model: str) -> 
     from .link import Link
     from .llm import make_client
 
-    link = await Link(opts).open()
+    link = await Link(opts, key=key).open()
     try:
         convo = Conversation(make_client(key), model)
         return await convo.run(task, link.call, link.tools)

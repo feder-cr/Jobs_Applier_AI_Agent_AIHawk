@@ -10,7 +10,7 @@ browser actions, and the command line around both. If you are changing what a
 person sees, or how the model decides what to do next, it is here.
 
 What is NOT here is the browser. AIHawk does not drive Firefox directly - it
-talks to an MCP server over MCP, using the same fourteen tools any other client
+talks to an MCP server over MCP, using the same tools any other client
 gets. That is deliberate and it is the thing to understand before changing
 anything: this interface has no privileged path to the page, so a browser
 capability it needs is a capability every client gets, or it does not exist.
@@ -23,7 +23,7 @@ only documentation. The package moved in the same day.
 | Repository | What it holds |
 |---|---|
 | **this one** | the interface, the agent loop, the CLI |
-| [invisible-playwright-mcp](https://github.com/feder-cr/invisible-playwright-mcp) | the MCP server: the fourteen tools, and nothing with a face |
+| [invisible-playwright-mcp](https://github.com/feder-cr/invisible-playwright-mcp) | the MCP server: the tools, and nothing with a face |
 | [invisible_playwright](https://github.com/feder-cr/invisible_playwright) | the Python wrapper, the launcher, and the patched browser it pins |
 | [invisible_core](https://github.com/feder-cr/invisible_core) | seed to fingerprint to preferences, proxy and geolocation |
 
