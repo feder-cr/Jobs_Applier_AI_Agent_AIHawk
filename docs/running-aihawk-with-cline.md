@@ -150,9 +150,8 @@ chosen tools run unasked; keep it to reading tools while the browser is new.
 
 **Do I need an API key for the browser?** No. The server's block carries no
 secret and there is nothing to sign up for; your existing Cline model setup
-is untouched. The OpenRouter key belongs to AIHawk's own interface, a
-different way in, covered in
-[using AIHawk without an API key](using-aihawk-without-an-api-key.md).
+is untouched. The OpenRouter key belongs to AIHawk's own interface
+(`uvx aihawk ui`), a different way in, and that one requires it.
 
 **Why is the first instruction so slow?** Engine download: about a quarter
 of a gigabyte on the first call that needs a page, silent from the editor's

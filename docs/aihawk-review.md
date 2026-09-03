@@ -97,9 +97,10 @@ it is what the product is.
 - **No macOS.** Windows x86_64 and Linux x86_64/arm64 only; the last
   macOS engine build was `firefox-20`, and support ended. A Mac user
   cannot run the standalone product today.
-- **The keyless mode is a demo, not a product.** `uvx aihawk ui` without
-  a key runs a placeholder that takes literal commands; real work needs
-  an OpenRouter key or an MCP assistant, and tokens cost money.
+- **There is no free mode.** Since 0.4.0 `uvx aihawk ui` refuses to start
+  without an OpenRouter key: an agent is a model with a browser, and tokens
+  cost money. Driving the browser by hand without a model is the
+  invisible_playwright library's job, not this product's.
 - **The browser is a quarter-gigabyte separate download** that arrives on
   first use unless you pre-fetch it (`uvx invisible-playwright fetch`),
   and a slow connection can time out confusingly on the first task.
@@ -199,9 +200,7 @@ who also maintains the patched-Firefox engine and this wiki - which is
 exactly the conflict declared in the first line.
 
 **See also:** [Which model to use with AIHawk](which-model-to-use-with-aihawk.md)
-for the token-cost side of the decision,
-[Using AIHawk without an API key](using-aihawk-without-an-api-key.md) for
-what the keyless mode really is, and
+for the token-cost side of the decision, and
 [Running AIHawk with Claude Code](running-aihawk-with-claude-code.md) for
 the MCP route.
 

@@ -34,7 +34,7 @@ from starlette.requests import Request
 from starlette.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
 from starlette.routing import Route
 
-from .brain import Brain, LiteralBrain
+from .brain import Brain
 from .link import Link, image_of
 
 # A RAW string. The script below contains \n, \w and \s inside JavaScript
@@ -323,9 +323,9 @@ form{ padding:var(--s3) var(--s4) var(--s4); border-top:1px solid var(--line-1);
       <div id="hint">
         <p>Tell it what to do, in a sentence. It opens the pages, reads them and
            clicks, and you watch on the right.</p>
-        <p class="eg">go https://example.com<br>read h1<br>click #submit</p>
-        <p class="sm">Literal commands only: that is the placeholder. Start with
-           an OpenRouter key for a model that works it out for you.</p>
+        <p class="eg">Go to example.com and tell me the main heading.</p>
+        <p class="sm">Plain language: the model works out the clicks. One
+           instruction at a time works best.</p>
       </div>
     </div>
     <div id="anchor"></div>
@@ -639,10 +639,10 @@ paint(); tick(); where();
 class ChatService:
     """One conversation, its listeners, and the link it drives."""
 
-    def __init__(self, link: Link, brain: Optional[Brain] = None,
+    def __init__(self, link: Link, brain: Brain,
                  model_label: str = "no model") -> None:
         self._link = link
-        self._brain = brain or LiteralBrain()
+        self._brain = brain
         self._listeners: List[asyncio.Queue] = []
         self.history: List[Dict[str, str]] = []
         self.model_label = model_label

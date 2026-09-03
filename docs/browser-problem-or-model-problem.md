@@ -1,6 +1,6 @@
 ---
 title: "Browser problem or model problem?"
-description: "When an agent task fails, one of two very different things broke. How to tell them apart with the keyless placeholder and a two-model comparison, before spending on either fix."
+description: "When an agent task fails, one of two very different things broke. How to tell them apart with a model-free replay on the same engine and a two-model comparison, before spending on either fix."
 parent: "Using the Agent"
 nav_order: 3
 ---
@@ -16,37 +16,53 @@ so misdiagnosing sends you shopping in the wrong store. People upgrade to a
 frontier model to fix a blocked page, and swap proxies to fix a model that
 clicks the wrong button, and both spend money to change nothing.
 
-AIHawk gives you an unusually clean way to split the two, and it costs nothing:
-the keyless placeholder. `uvx aihawk ui` with no API key runs the full
-interface and the full stealth browser with no model in the loop at all - your
-typed commands go straight to the browser tools. Whatever happens in that mode
-happened without a model, so it cannot be a model problem. That is the
+There is an unusually clean way to split the two, and it costs nothing in
+model tokens: replay the failing step on the same engine with no model in the
+loop at all. The stealth Firefox that AIHawk drives is on PyPI as a plain
+Python library (`pip install invisible-playwright`, Playwright's API), so a
+model-free replay is a few lines in a Python shell. Whatever happens in that
+replay happened without a model, so it cannot be a model problem. That is the
 instrument this page is built around.
 
-## The instrument: a browser with no model attached
+## The instrument: the same browser with no model attached
 
-Without a key, the interface swaps the model for a placeholder that understands
-a fixed set of literal commands - `go <url>`, `read [selector]`,
-`click <selector>`, `type <selector> <text>`, `tab`, `shot` - and answers
-anything else with a help line. Each command is one real tool call on the same
-browser, over the same connection, that the real agent would use; the live pane
-on the right shows the page throughout.
-[The keyless-mode page](using-aihawk-without-an-api-key.md) covers it in full;
-here it is a diagnostic probe: you can replay any single step of a failed task
-by hand and see exactly what the browser saw, with zero model behavior mixed
-in.
+This exact replay was executed against the public scraping sandbox while
+writing this page, and it prints `Travel | 11 results`:
+
+```python
+from invisible_playwright import InvisiblePlaywright
+
+with InvisiblePlaywright(seed=7) as browser:
+    page = browser.new_page()
+    page.goto("https://books.toscrape.com/", wait_until="domcontentloaded")
+    page.click('a[href*="category/books/travel"]')
+    page.locator('h1:text("Travel")').wait_for()
+    print(page.locator("h1").inner_text(), "|",
+          page.locator("form strong").first.inner_text(), "results")
+```
+
+Each call is the same engine, the same fingerprint work, the same connection
+path the agent would use - minus the model. One line of hard-won detail is in
+there on purpose: after a `click` that navigates, wait for something the
+DESTINATION shows (`wait_for()` on its heading) before reading. The first
+version of this snippet read the old page's heading and reported the wrong
+page confidently - which is exactly the kind of off-by-one a model in the
+loop would have papered over.
+
+Swap in your own URL, your own selectors, and the failing step, and you can
+see verbatim what the browser saw with zero model behavior mixed in.
 
 ## Symptoms that point at the browser side
 
 These appear with any model, and with no model:
 
-- **The page never loads.** `go` times out or errors in placeholder mode too.
-  Network, proxy, or the site itself. If a proxy is configured, suspect it
-  first; if this is the first run ever, see the last symptom below.
-- **A challenge page or block message appears instead of the content.** `read
-  body` in placeholder mode shows you verbatim what the site served. If the
-  block is there before any automation logic has acted, no model change can
-  touch it - work through
+- **The page never loads.** `page.goto` times out or errors in the model-free
+  replay too. Network, proxy, or the site itself. If a proxy is configured,
+  suspect it first; if this is the first run ever, see the last symptom below.
+- **A challenge page or block message appears instead of the content.**
+  `page.locator("body").inner_text()` in the replay shows you verbatim what
+  the site served. If the block is there before any automation logic has
+  acted, no model change can touch it - work through
   [why does my AI agent get blocked?](why-does-my-ai-agent-get-blocked.md),
   which separates fingerprint, IP reputation, volume and rhythm.
 - **It works by hand in your normal browser, but not through AIHawk, on the
@@ -63,8 +79,8 @@ These appear with any model, and with no model:
 
 ## Symptoms that point at the model side
 
-These appear only with a model in the loop, on pages the placeholder handles
-fine:
+These appear only with a model in the loop, on pages the model-free replay
+handles fine:
 
 - **The right page, the wrong element.** The transcript shows the page loaded
   and the model clicked or typed somewhere defensible but wrong. Often a
@@ -93,11 +109,12 @@ fine:
    your assistant's own conversation. Most failures are legible there, and the split is often obvious:
    a block page in a tool result is browser-side, a wrong click on a healthy
    page is model-side.
-2. **Replay the failing step in placeholder mode.** Restart the interface with
-   no key, `go` to the same URL, `read` what came back, `click` the same
-   selector. If the failure reproduces with literal commands, it is
-   browser-side, full stop - no model was present. If your hand-driven steps
-   sail through, the page is drivable and the model is the variable.
+2. **Replay the failing step with no model.** In a Python shell, on the
+   library: `goto` the same URL, read what came back, `click` the same
+   selector (the executed snippet above is the template). If the failure
+   reproduces, it is browser-side, full stop - no model was present. If your
+   hand-driven steps sail through, the page is drivable and the model is the
+   variable.
 3. **Same task, two models.** If step 2 cleared the browser, run the identical
    instruction with `--model` set to something stronger, and pass the same
    `--seed` both times so the browser identity is constant and the model is
@@ -120,7 +137,7 @@ evidence about the model. Then rerun before judging anything else.
 ## Short answers to the questions that lead here
 
 **How do I know if my agent failed because of the site or the model?** Replay
-the failing step with literal commands in keyless `aihawk ui`. Reproduces
+the failing step on the library with no model in the loop. Reproduces
 without a model: browser side. Works by hand: model side. That single test
 settles most cases.
 
@@ -137,31 +154,33 @@ then a stronger model on the same task and seed.
 without finishing. On a short task, that is a model-side symptom; on a long
 one, split the task into smaller instructions before blaming anything.
 
-**Can I run this diagnosis without spending anything?** The placeholder half,
-yes - keyless mode is free apart from the one-time engine download. The
-two-model comparison spends normal task tokens on each run.
+**Can I run this diagnosis without spending anything?** The replay half, yes -
+the library needs no model and no key, and the engine download is one-time.
+The two-model comparison spends normal task tokens on each run.
 
-**Do I need the placeholder if I already have a key?** It stays useful with a
-key precisely because it removes the model: any failure it reproduces is
-guaranteed browser-side, which is a certainty no model-driven run gives you.
+**Is the replay still useful if I already have a key?** Precisely because it
+removes the model: any failure it reproduces is guaranteed browser-side,
+which is a certainty no model-driven run gives you.
 
 ## Sources
 
 All retrieved 2026-09-03.
 
 - [feder-cr/AIHawk](https://github.com/feder-cr/AIHawk), this repository's
-  source: `src/aihawk/brain.py` (the placeholder's command set and that each
-  command is a real tool call), `src/aihawk/agent.py` (the shared loop, the
-  turn ceiling, the invalid-arguments retry), and the README (the keyless mode,
-  the engine download and prefetch command).
+  source: `src/aihawk/agent.py` (the shared loop, the
+  turn ceiling, the invalid-arguments retry), and the README (the
+  engine download and prefetch command).
+- [invisible_playwright](https://github.com/feder-cr/invisible_playwright),
+  the engine as a library; the replay snippet above was executed against
+  books.toscrape.com on 2026-09-03 and printed the line quoted.
 
 **See also:** [why does my AI agent get blocked?](why-does-my-ai-agent-get-blocked.md),
-[using AIHawk without an API key](using-aihawk-without-an-api-key.md),
 [which model to use with AIHawk](which-model-to-use-with-aihawk.md), and
 [agent retry loops and rate limits](agent-retry-loops-rate-limits.md).
 
 ---
 
-*From the [AIHawk](https://github.com/feder-cr/AIHawk) wiki. The placeholder
-exists because the maintainer needed this exact split while debugging; it was
-kept as a feature because you will too.*
+*From the [AIHawk](https://github.com/feder-cr/AIHawk) wiki. The model-free
+replay is how the maintainer runs this exact split while debugging; the wrong
+first version of the snippet above is left described because that is how it
+went.*

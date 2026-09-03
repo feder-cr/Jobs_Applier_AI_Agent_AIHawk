@@ -18,9 +18,11 @@ those tests moved onto `ui` rather than being deleted with the command. Four
 guarantees genuinely died with it and are recorded here so nobody hunts for
 them later:
 
-  * "no key anywhere exits 1 and names both ways to supply one" - `ui` does not
-    require a key at all. It starts on the literal-command placeholder instead,
-    which is a deliberate difference and not a regression;
+  * "no key anywhere exits 1 and names both ways to supply one" - dead with
+    `do`, reborn with 0.4.0: the literal-command placeholder was removed, so
+    `ui` now refuses without a key too, and the refusal must also point at
+    the invisible_playwright library as the model-free way to drive the
+    engine (tested below);
   * "the TASK argument is required", "the task reaches drive verbatim" and "the
     result is printed verbatim with one trailing newline" - `ui` takes no task
     and prints no result.
@@ -144,22 +146,38 @@ def test_key_is_taken_from_the_environment_when_the_flag_is_absent(link, monkeyp
     assert link.call["key"] == FAKE_KEY
 
 
+def test_no_key_anywhere_is_refused_and_points_at_the_library(link):
+    """An agent is a model with a browser; keyless there is nothing to serve.
+
+    The refusal must name both ways to supply a key AND the model-free
+    alternative, because "use the library" is the answer this error exists
+    to teach.
+    """
+    result = run("ui")
+
+    assert result.exit_code != 0, "keyless ui started: %r" % result.output
+    assert link.calls == [], "the browser was launched before the refusal"
+    assert "--openrouter-key" in result.output
+    assert "OPENROUTER_API_KEY" in result.output
+    assert "invisible_playwright" in result.output, (
+        "the refusal does not point at the library: %r" % result.output)
+
+
 def test_an_openai_key_in_the_environment_is_not_accepted(link, monkeypatch):
     """OPENAI_API_KEY is not OPENROUTER_API_KEY, and treating it as one would
     send somebody's OpenAI credential to a different company's endpoint.
 
-    With no OpenRouter key anywhere, `ui` starts on the placeholder: what must
-    NOT happen is that it starts with a model, holding the OpenAI key.
+    With no OpenRouter key anywhere, `ui` must refuse: what must NOT happen
+    is that it starts with a model, holding the OpenAI key.
     """
     monkeypatch.setenv("OPENAI_API_KEY", FAKE_KEY)
 
     result = run("ui")
 
-    assert stopped_at_link(result)
-    assert link.call["key"] is None, (
-        "an OPENAI_API_KEY was accepted as an OpenRouter key")
-    assert "literal commands only" in result.output, (
-        "it did not fall back to the placeholder: %r" % result.output)
+    assert result.exit_code != 0, (
+        "an OPENAI_API_KEY was accepted as an OpenRouter key: %r"
+        % result.output)
+    assert link.calls == [], "the browser was launched despite the refusal"
 
 
 def test_the_command_offers_no_second_provider():
@@ -219,13 +237,16 @@ def test_every_option_reaches_the_link_with_the_right_name_and_type(link):
     assert opts["profile_dir"] == "C:/profiles/one"
 
 
-def test_defaults_are_none_headless_and_the_placeholder(link):
-    """With nothing passed, nothing is invented.
+def test_defaults_are_none_and_headless(link, monkeypatch):
+    """With nothing passed but the key, nothing else is invented.
 
     ⛔ `--proxy` in particular must default to None and not to "": an empty
     string is a value, and STEALTHFOX_PROXY set to it is not the same as no
-    proxy at all.
+    proxy at all. (The key is supplied because since 0.4.0 a keyless `ui`
+    refuses before it ever reaches the Link.)
     """
+    monkeypatch.setenv("OPENROUTER_API_KEY", FAKE_KEY)
+
     result = run("ui")
 
     assert stopped_at_link(result)
@@ -235,7 +256,7 @@ def test_defaults_are_none_headless_and_the_placeholder(link):
     assert opts["headed"] is False
     assert opts["binary"] is None
     assert opts["profile_dir"] is None
-    assert link.call["key"] is None
+    assert link.call["key"] == FAKE_KEY
 
 
 def test_the_model_default_is_named_and_used(link, monkeypatch):
@@ -257,6 +278,7 @@ def test_the_option_names_are_the_ones_the_runner_reads(link):
     """
     result = run(
         "ui",
+        "--openrouter-key", FAKE_KEY,
         "--proxy", "http://user:pass@proxy.example.com:8080",
         "--seed", "7",
         "--headed",
@@ -273,10 +295,12 @@ def test_the_option_names_are_the_ones_the_runner_reads(link):
     assert env["STEALTHFOX_PROFILE_DIR"] == "C:/profiles/two"
 
 
-def test_without_headed_the_child_is_left_headless(link):
+def test_without_headed_the_child_is_left_headless(link, monkeypatch):
     """The variable is written only to turn headless OFF, so its ABSENCE is the
     headless case. Writing "1" would be equally correct and is not what the
     engine reads."""
+    monkeypatch.setenv("OPENROUTER_API_KEY", FAKE_KEY)
+
     result = run("ui")
 
     assert stopped_at_link(result)
