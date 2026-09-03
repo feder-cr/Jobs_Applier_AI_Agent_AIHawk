@@ -31,3 +31,5 @@ and what to expect before you spend model tokens finding out.
 - [Posting to Facebook with an AI agent](post-to-facebook-with-an-ai-agent.md)
 - [Posting to Instagram with an AI agent](post-to-instagram-with-an-ai-agent.md)
 - [Posting to X with an AI agent](ai-agent-post-to-x.md)
+- [Automating LinkedIn posts: read this first](automating-linkedin-posts-read-this-first.md)
+- [Appointment bots: what they are and what an agent can legitimately do](appointment-bots-explained.md)
