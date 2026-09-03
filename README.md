@@ -51,9 +51,6 @@ uvx aihawk ui --openrouter-key sk-or-...
 
 Then open **http://127.0.0.1:8765** and type the same thing.
 
-No key yet? `uvx aihawk ui` starts anyway on a placeholder that takes literal
-commands, which is enough to see the interface work.
-
 **Same patched Firefox behind both.** AIHawk reaches it through that MCP server,
 over MCP, exactly as your assistant would.
 
