@@ -93,7 +93,7 @@ rendered as images are where reading starts to drift. The honest conclusions:
 
 | Piece | Version |
 |---|---|
-| invisible-playwright-mcp | 0.3.0 |
+| invisible-playwright-mcp | 0.3.0 (the locally installed server that drove this run; releases have moved well past it, so your tool names may differ) |
 | invisible_playwright | 0.8.3 |
 | invisible_core | 26.17.0 |
 | Engine | firefox-26 |

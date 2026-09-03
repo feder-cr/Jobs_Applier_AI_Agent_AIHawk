@@ -1,6 +1,6 @@
 ---
 title: "Monitoring a page for changes with an AI agent"
-description: "When a plain diff monitor is the right tool, when an agent's judgment earns its cost, how to schedule checks with the aihawk CLI, and what to store between runs."
+description: "When a plain diff monitor is the right tool, when an agent's judgment earns its cost, how to schedule the capture as a script on the same engine, and what to store between runs."
 parent: "Using the Agent"
 nav_order: 7
 ---

@@ -170,7 +170,7 @@ All retrieved 2026-09-03.
   README.
 - [feder-cr/AIHawk](https://github.com/feder-cr/AIHawk), plus its README and
   source in this repository, for the agent loop, the grounding line in its
-  system prompt, and the `do` command this page's examples use.
+  system prompt this page's cost notes describe.
 
 **See also:** [what is an AI web agent?](ai-web-agent-explained.md),
 [AI browser agents vs traditional scraping](ai-browser-agents-vs-traditional-scraping.md),

@@ -176,8 +176,8 @@ All retrieved 2026-09-03.
   the server's README, for the complete tool list this page's "no download
   tool" statement is checked against.
 - [feder-cr/AIHawk](https://github.com/feder-cr/AIHawk), plus its README and
-  source in this repository, for `--profile-dir`, `--seed`, `--headed`, the
-  key-in-environment guidance and the answer-on-stdout behavior of `do`.
+  source in this repository, for `--profile-dir`, `--seed`, `--headed` and
+  the key-in-environment guidance.
 
 **See also:** [extracting data to a CSV](how-to-extract-data-to-csv-with-an-ai-agent.md),
 [getting website data into Google Sheets](website-data-to-google-sheets-ai-agent.md),
