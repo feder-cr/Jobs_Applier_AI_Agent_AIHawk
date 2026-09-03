@@ -90,17 +90,19 @@ again. The half that no product can supply is how often you run it.
 - **Mind the exit, not the browser count.** The unit a counter sees is requests per
   address and per account. Several agents behind one exit IP, each politely pacing
   itself, are one very busy client to the site.
-- **If you script it, budget it.** The assistant one-shot (`claude -p` with
-  AIHawk's browser attached over MCP) makes it easy to put an agent in a
-  script or cron job, which makes it easy to build an accidental refresh storm. Give
+- **If you script it, budget it.** A scheduled check on the engine (the
+  script pattern on
+  [the monitoring page](how-to-monitor-a-page-with-an-ai-agent.md))
+  makes it easy to put a browser run in cron, which makes it easy to build an
+  accidental refresh storm. Give
   the script a budget and backoff, because that is the layer that owns the schedule:
 
 ```python
 import subprocess, time
 
-def run_with_backoff(task, *, max_attempts=3):
+def run_with_backoff(check_cmd, *, max_attempts=3):
     for attempt in range(max_attempts):
-        r = subprocess.run(["claude", "-p", task],
+        r = subprocess.run(check_cmd,
                            capture_output=True, text=True)
         if r.returncode == 0:
             return r.stdout
@@ -108,8 +110,8 @@ def run_with_backoff(task, *, max_attempts=3):
     raise RuntimeError("giving up instead of hammering")
 ```
 
-The agent makes each visit look right; the script decides how many visits happen and
-when. They are separate jobs, and the second one cannot be delegated downward.
+The engine makes each visit look right; the script decides how many visits happen
+and when. They are separate jobs, and the second one cannot be delegated downward.
 
 ## What the browser fixes, and what it does not
 

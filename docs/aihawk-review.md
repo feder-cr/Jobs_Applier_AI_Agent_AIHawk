@@ -70,10 +70,11 @@ fails if that stops being true.
 
 **Operational features match real use.** `--proxy` takes HTTP or SOCKS5
 and the browser's timezone, locale and egress follow it; `--profile-dir`
-persists logins between runs; `--headed` shows the window; and on the
+persists logins between runs; `--headed` shows the window; on the
 assistant path the same knobs ride the MCP registration as
-`STEALTHFOX_*` variables, which is what scripts and cron want. The
-pieces you need to run it repeatedly are there, not left as exercises.
+`STEALTHFOX_*` variables; and for scheduled work the engine itself is a
+Python library with Playwright's API. The pieces you need to run it
+repeatedly are there, not left as exercises.
 
 **It is genuinely open.** MIT license, the engine and its wrapper
 published as installable packages, and the agent code in this repository

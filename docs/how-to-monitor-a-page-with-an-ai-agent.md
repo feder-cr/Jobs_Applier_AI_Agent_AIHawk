@@ -61,82 +61,81 @@ Three shapes of monitoring genuinely need the model:
   bullets, ignoring cosmetics." The output is an editorial judgment, which is
   exactly what you cannot script.
 
-Be honest about the price even here: every check is a fresh agent run. On
-AIHawk that means a browser session opened, a handful of model turns, and the
-session closed, cents per check on the default model and roughly a minute of
-wall clock. Daily is comfortable; every five minutes is a bill and, as covered
-below, a signature.
+Be honest about the price even here: every judgment is a fresh agent session -
+a browser opened, a handful of model turns, cents on the default model and
+roughly a minute of wall clock. Daily is comfortable; every five minutes is a
+bill and, as covered below, a signature. The scheduled capture itself, as the
+next section shows, costs no model at all.
 
-## Scheduling it: the one-shot shape, as of aihawk 0.3.0
+## Scheduling it: a script, as of aihawk 0.3.0
 
-Since 0.3.0 AIHawk itself is interactive-only (`uvx aihawk ui`); the old `do`
-subcommand is gone. The one-shot shape did not disappear, it moved: your
-assistant's CLI runs a single instruction non-interactively, with AIHawk's
-browser attached over MCP. One-time setup, then the check itself:
+Since 0.3.0 AIHawk itself is interactive-only (`uvx aihawk ui`): there is no
+headless subcommand to put in cron anymore. That is less of a loss than it
+sounds, because the scheduled half of monitoring is deliberately mechanical -
+fetch the page, extract one signal, save it - and mechanical work belongs in
+code, not in model turns. The same stealth engine AIHawk drives is on PyPI as
+a Python library with Playwright's API, so the check is a short script. This
+one runs as shown, against the public scraping sandbox:
 
-```bash
-claude mcp add -s user stealth -e STEALTHFOX_SEED=7 \
-  -e STEALTHFOX_PROFILE_DIR=$HOME/.hawk-mon -- uvx invisible-playwright-mcp
+```python
+# check_page.py - fetch one signal from the watched page
+from invisible_playwright import InvisiblePlaywright
 
-claude -p "Go to <your page>. Report the current title and price of the
-first listed item, one line, no commentary."
+with InvisiblePlaywright(seed=7) as browser:
+    page = browser.new_page()
+    page.goto("https://books.toscrape.com/", wait_until="domcontentloaded")
+    first = page.locator("article.product_pod").first
+    title = first.locator("h3 a").get_attribute("title")
+    price = first.locator(".price_color").inner_text()
+    print(f"{title} | {price}")
 ```
 
-`claude -p` runs one instruction, prints the answer to stdout, and exits; the
-browser session opens for the run and closes after. That shape composes with
-cron, systemd timers, or Windows Task Scheduler the way any command does:
-redirect stdout to a dated file and you have a log of answers. The seed and
-the persistent profile now live on the server registration (the `-e` lines)
-instead of per-run flags, which is where a scheduled job wants them anyway.
+Executed on 2026-09-03 it prints exactly `A Light in the Attic | £51.77`.
+`pip install invisible-playwright` is the only setup; swap the URL and the two
+selectors for your page's. Three details matter for a recurring check:
 
-Three flags matter for a recurring check:
-
-- **`--seed`** pins the browser identity. Same seed, same fingerprint, every
+- **`seed=7`** pins the browser identity. Same seed, same fingerprint, every
   run; without it each check arrives as a new device, which is not what a
   returning reader looks like.
-- **`--profile-dir`** keeps a persistent profile, so cookies and any login
-  survive between runs. Use an absolute path; a relative one resolves from
-  wherever cron happened to start the command.
-- **The key comes from the environment.** `do` requires an OpenRouter key, and
-  `OPENROUTER_API_KEY` in the environment beats `--openrouter-key` on a
-  schedule twice over: the flag lands in shell history and, on Linux, in the
-  process list for every user on the machine.
+- **`profile_dir="..."`** (a second keyword argument) keeps a persistent
+  profile, so cookies and any login survive between runs. Use an absolute
+  path; a relative one resolves from wherever cron happened to start.
+- **No model, no key, anywhere in the scheduled path.** The script reads one
+  signal; judging what it means is the model's half, and it does not belong
+  in the crontab.
 
 A real crontab line, deliberately not on the hour:
 
 ```
-17 8 * * *  claude -p "..." >> $HOME/hawk-mon/$(date +\%F).txt 2>&1
+17 8 * * *  python $HOME/hawk-mon/check_page.py >> $HOME/hawk-mon/$(date +\%F).txt 2>&1
 ```
 
-No API key in the crontab: on the assistant path the model comes from the
-assistant's own login, and the browser needs no key at all. The interface
-(`uvx aihawk ui`) has no scheduler; the recurring path is the assistant
-one-shot plus whatever scheduler your system already has.
+The interface (`uvx aihawk ui`) has no scheduler; the recurring path is this
+script plus whatever scheduler your system already has.
 
 ## What to store between runs
 
-Each `do` run is a one-shot conversation: nothing carries over on its own,
-which means the memory of the monitor is yours to keep. Two files do it:
+Each run prints one line and exits: nothing carries over on its own, which
+means the memory of the monitor is yours to keep. Two files do it:
 
-- **The previous answer.** "What changed" only means something against a
-  baseline, and the baseline has to travel in the prompt. The workable pattern
-  feeds the last run's output back in:
+- **The previous signal.** "Did it change" is a comparison, and with the
+  signal in a file the comparison is a diff, not a model call:
 
   ```bash
-  claude -p "Here is what this page said on the last check:
-  $(cat ~/hawk-mon/last.txt)
-  Now go to <your page> and report only meaningful differences from that,
-  or the exact word NOCHANGE if nothing that matters changed." \
-    | tee ~/hawk-mon/last.txt
+  python check_page.py > today.txt
+  diff -q last.txt today.txt || echo "changed - go look"
+  mv today.txt last.txt
   ```
 
-  Asking for a sentinel word like `NOCHANGE` makes the no-op case scriptable:
-  grep for it and only notify when it is absent.
+  The exit code of `diff` is the sentinel: zero means quiet, non-zero means
+  something moved. No model can misread a byte comparison.
 
-- **The dated archive.** Keep every answer with its timestamp. When the agent
-  claims a change, the archive is how you check whether it is real or a
-  misreading, and misreadings happen: the model is a stochastic reader, and a
-  monitor that alerts falsely gets ignored precisely when it is finally right.
+- **The dated archive.** Keep every line with its timestamp. When the diff
+  fires and the question becomes "does this change MATTER", that is the
+  judgment half - open `uvx aihawk ui` (or your assistant with this browser
+  attached) and ask exactly that, with the two saved lines pasted in. The
+  agent earns its per-session cost only on the days something actually moved,
+  which is the whole economics of the hybrid this page keeps arguing for.
 
 The strongest architecture is the two-stage hybrid: let the cheap diff monitor
 watch constantly, and run the agent only when the diff fires, to judge whether
@@ -172,12 +171,11 @@ remember that with `--seed` unset, every run was a different browser.
 
 ## Short answers to the questions that lead here
 
-**Can an AI agent monitor a website for changes?** Yes, mechanically: schedule
-a one-shot assistant run (`claude -p`, with AIHawk's browser attached over
-MCP) with a prompt that carries the previous state and asks for
-meaningful differences. Whether it should depends on the question: byte-level
-"did it change" belongs to a diff tool; "does the change matter" is the
-agent's case.
+**Can an AI agent monitor a website for changes?** The watching half is a
+scheduled script on the same stealth engine; the judging half is the agent,
+invoked when the script's diff fires. Whether the agent belongs in the loop
+at all depends on the question: byte-level "did it change" belongs to a diff
+tool; "does the change matter" is the agent's case.
 
 **Is an LLM agent overkill for change detection?** For plain change detection,
 yes, by orders of magnitude on cost and latency. It stops being overkill when
@@ -185,19 +183,20 @@ the check requires reading: meaningful-change questions, prose thresholds,
 summarized deltas.
 
 **How do I schedule AIHawk to check a page every day?** Cron (or any
-scheduler) plus `claude -p "..."` with the stealth MCP server registered once,
-`STEALTHFOX_SEED` for a stable identity, `STEALTHFOX_PROFILE_DIR` for a
-persistent profile, and stdout redirected somewhere dated. There is no
-built-in scheduler; the one-shot run is the building block on purpose.
+scheduler) plus the `check_page.py` script above on the same engine: `seed`
+for a stable identity, `profile_dir` for a persistent profile, and stdout
+redirected somewhere dated. There is no built-in scheduler; a script that
+prints one line is the building block on purpose.
 
-**What does each check cost?** A browser session plus a short model
-conversation: cents on the default model, roughly a minute of wall clock. The
-hybrid pattern, diff tool always on, agent only on diff-fire, keeps the model
-bill proportional to actual changes.
+**What does each check cost?** The scheduled script costs no model tokens at
+all: a browser session and a few seconds. The model bill starts only when a
+diff fires and you ask the agent whether the change matters, which keeps that
+bill proportional to actual changes - the whole point of the hybrid.
 
 **How does the agent know what changed since last time?** It does not, unless
-you tell it. Runs share nothing; store the previous answer and feed it back in
-the next prompt as the baseline to compare against.
+you tell it. Runs share nothing; the script stores each signal to a file, and
+when you bring the question to the agent you paste the before and after in as
+the baseline to compare against.
 
 **Will a site notice a scheduled agent?** It can: a metronomic schedule is a
 tell independent of the browser, and the browser's own realism does not cover
@@ -215,9 +214,11 @@ All retrieved 2026-09-03.
 - [feder-cr/AIHawk](https://github.com/feder-cr/AIHawk), plus its README and
   source in this repository: the interface entrypoint and the
   open-run-close session behavior in
-  [`src/aihawk/runner.py`](https://github.com/feder-cr/AIHawk/blob/main/src/aihawk/runner.py),
-  and [invisible-playwright-mcp](https://github.com/feder-cr/invisible-playwright-mcp)
-  for the `STEALTHFOX_*` variables the scheduled path rides on.
+  [`src/aihawk/runner.py`](https://github.com/feder-cr/AIHawk/blob/main/src/aihawk/runner.py).
+- [invisible_playwright](https://github.com/feder-cr/invisible_playwright),
+  the engine as a Python library, whose Playwright API the scheduled script
+  uses; the script above was executed against books.toscrape.com on
+  2026-09-03 and printed the line quoted.
 
 **See also:** [extracting data to a CSV](how-to-extract-data-to-csv-with-an-ai-agent.md),
 [agent retry loops and rate limits](agent-retry-loops-rate-limits.md),

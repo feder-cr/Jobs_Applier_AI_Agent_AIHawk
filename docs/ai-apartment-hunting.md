@@ -81,21 +81,17 @@ minutes is a bill and a signature.
 
 ## The workflow, concretely
 
-The repeatable single instruction runs through your assistant's one-shot
-mode with AIHawk's browser attached over MCP (since aihawk 0.3.0 the aihawk
-command itself is interactive-only; the one-time MCP setup is on
-[the monitoring page](how-to-monitor-a-page-with-an-ai-agent.md)). A worked
-example, with the portal URL being whatever search-results page you have
-already set up by hand:
+Reading listings against criteria is judgment work, so it runs where the
+model is: `uvx aihawk ui`, or your assistant with AIHawk's browser attached.
+A worked instruction to paste, with the portal URL being whatever
+search-results page you have already set up by hand:
 
-```bash
-claude -p "Go to <your saved search URL>. Read the first 15 listings.
-My criteria: max 1600/month, 2 rooms, pets allowed, available within 60
-days, no ground floor without outdoor space. For each listing output one
-line: title, price, rooms, floor, verdict FIT/NEAR/NO with the deciding
-reason. Read the listing text, do not trust the summary card. If a fact is
-not stated, write UNKNOWN, do not guess."
-```
+> Go to `<your saved search URL>`. Read the first 15 listings.
+> My criteria: max 1600/month, 2 rooms, pets allowed, available within 60
+> days, no ground floor without outdoor space. For each listing output one
+> line: title, price, rooms, floor, verdict FIT/NEAR/NO with the deciding
+> reason. Read the listing text, do not trust the summary card. If a fact is
+> not stated, write UNKNOWN, do not guess.
 
 The prompt carries the craft, and three parts of it matter more than the
 rest. The criteria are explicit and closed - the agent judges against your
@@ -105,10 +101,12 @@ load-bearing: listings omit exactly the facts that matter, and an agent
 that fills gaps optimistically is worse than none, because a wrong "pets
 allowed" costs you a viewing trip.
 
-For the recurring version, put that command in cron or Task Scheduler,
-redirect stdout to a dated file, and set `STEALTHFOX_PROFILE_DIR` on the MCP
-registration so the session persists between runs. Once a day, or twice in a
-genuinely fast market. For interactive sessions - "open the third FIT and tell me what
+For the recurring half - "anything new today?" - split the work the way
+[the monitoring page](how-to-monitor-a-page-with-an-ai-agent.md) does: a
+scheduled script on the same engine captures the listing count or the newest
+title each morning, and when that signal moves you bring the judgment prompt
+above to the agent. Once a day, or twice in a genuinely fast market. For
+interactive sessions - "open the third FIT and tell me what
 the photos show about the kitchen" - `uvx aihawk ui` gives you the same
 agent beside a live browser view, and if you already use Claude Code or
 Claude Desktop, the same browser attaches to your assistant instead
