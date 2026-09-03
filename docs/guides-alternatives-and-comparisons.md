@@ -26,3 +26,8 @@ another tool covers more, the page says so.
 - [Cloud browser infrastructure for AI agents, explained](cloud-browser-infrastructure-for-ai-agents.md)
 - [Browserbase alternatives](browserbase-alternatives.md)
 - [Firecrawl vs an AI browser agent](firecrawl-vs-ai-browser-agents.md)
+- [Project Mariner is gone: what replaced it](project-mariner-is-gone.md)
+- [Manus alternatives](manus-alternatives.md)
+- [Gemini computer use vs Claude computer use](gemini-computer-use-vs-claude-computer-use.md)
+- [AIHawk, reviewed honestly by its own wiki](aihawk-review.md)
+- [AI browser vs AI browser agent: which one do you want?](ai-browser-vs-ai-browser-agent.md)

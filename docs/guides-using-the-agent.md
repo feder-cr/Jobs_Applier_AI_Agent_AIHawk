@@ -22,3 +22,8 @@ and what to expect before you spend model tokens finding out.
 - [Running AIHawk's browser from Claude Desktop](running-aihawk-with-claude-desktop.md)
 - [Running AIHawk's browser from Cursor](running-aihawk-with-cursor.md)
 - [Using an AI agent to hunt for apartments](ai-apartment-hunting.md)
+- [Getting website data into Google Sheets with an AI agent](website-data-to-google-sheets-ai-agent.md)
+- [Using an AI agent to download invoices from portals](ai-agent-download-invoices.md)
+- [AI agents for web research](ai-agent-web-research.md)
+- [Using an AI agent to test your own website](ai-agent-to-test-website.md)
+- [Running AIHawk's browser from Cline](running-aihawk-with-cline.md)
