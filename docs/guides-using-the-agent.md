@@ -21,3 +21,4 @@ and what to expect before you spend model tokens finding out.
 - [Monitoring a page for changes with an AI agent](how-to-monitor-a-page-with-an-ai-agent.md)
 - [Running AIHawk's browser from Claude Desktop](running-aihawk-with-claude-desktop.md)
 - [Running AIHawk's browser from Cursor](running-aihawk-with-cursor.md)
+- [Using an AI agent to hunt for apartments](ai-apartment-hunting.md)
