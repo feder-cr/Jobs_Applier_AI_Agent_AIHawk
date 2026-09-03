@@ -18,7 +18,7 @@ dependencies = [
     # is not something to leave to chance. Set only after 0.9.0 was on the index,
     # never before: a pin to something unpublished is a package nobody can
     # install.
-    "invisible-playwright-mcp>=0.9.0",
+    "invisible-playwright-mcp>=0.10.0",
     "mcp>=1.2",
     "openai>=1.30",
     "click>=8.1",
