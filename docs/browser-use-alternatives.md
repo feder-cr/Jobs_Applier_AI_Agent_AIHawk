@@ -57,7 +57,10 @@ business, genuinely useful for teams that want managed scale. But if you came
 to open source to keep the agent local, keyed to providers you chose, some of
 the ecosystem's energy is now pointed somewhere you do not want to go. The
 open MIT core still works standalone; you should just know which direction
-the wind blows.
+the wind blows. As of 2026-09-03 the split is explicit on browser-use's own
+site, which sells two commercial products, "Browser Use Agents" and "Browser
+Infrastructure" (managed cloud browsers for your own code) - the
+[infrastructure layer itself is explained here](cloud-browser-infrastructure-for-ai-agents.md).
 
 ### What is not on this list
 
@@ -157,6 +160,7 @@ for whether you need an agent at all.
 ## Sources
 
 - The [browser-use repository](https://github.com/browser-use/browser-use), retrieved 2026-09-03: stars, license, description, model support and the cloud material.
+- [browser-use.com](https://browser-use.com/), retrieved 2026-09-03, for the two commercial products named above.
 - [SiliconANGLE: Browser Use raises $17M](https://siliconangle.com/2025/03/23/browser-use-raises-17m-help-steer-ai-agents-internet/), surfaced via search 2026-09-03.
 - [browser-use getting blocked: what you can and cannot change](browser-use-getting-blocked.md), this wiki's own analysis, which reads `BrowserProfile`'s fields from browser-use's source.
 - The [Skyvern](https://github.com/Skyvern-AI/skyvern), [Agent-S](https://github.com/simular-ai/Agent-S) and [AIHawk](https://github.com/feder-cr/AIHawk) repositories, retrieved 2026-09-03.

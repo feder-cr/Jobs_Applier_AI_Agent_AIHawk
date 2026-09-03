@@ -23,3 +23,6 @@ another tool covers more, the page says so.
 - [Open-source computer-use agents](computer-use-agent-open-source.md)
 - [What is an AI web agent?](ai-web-agent-explained.md)
 - [AI browser agents vs traditional scraping](ai-browser-agents-vs-traditional-scraping.md)
+- [Cloud browser infrastructure for AI agents, explained](cloud-browser-infrastructure-for-ai-agents.md)
+- [Browserbase alternatives](browserbase-alternatives.md)
+- [Firecrawl vs an AI browser agent](firecrawl-vs-ai-browser-agents.md)

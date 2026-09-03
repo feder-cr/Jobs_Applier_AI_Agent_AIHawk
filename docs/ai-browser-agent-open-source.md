@@ -1,6 +1,6 @@
 ---
 title: "Open-source AI browser agents"
-description: "The open-source agents that drive a real browser - browser-use, Skyvern, Stagehand, Nanobrowser, BrowserOS, AIHawk - compared by license, engine and how each reads a page."
+description: "The open-source agents that drive a real browser - browser-use, agent-browser, Skyvern, Stagehand, Nanobrowser, BrowserOS, AIHawk - compared by license, engine and how each reads a page."
 parent: "Alternatives and Comparisons"
 nav_order: 7
 ---
@@ -49,6 +49,20 @@ through Ollama. The company behind it also runs a paid hosted cloud; the library
 the open part, and it is the default answer to "which one do most people use". If you
 are evaluating it against alternatives, there is a dedicated page for that:
 [browser-use alternatives](browser-use-alternatives.md).
+
+### agent-browser
+
+41.9k stars, Rust, Apache-2.0, from Vercel's labs organization. It is a CLI rather
+than a framework: a native binary with a background daemon, built to be called by a
+coding agent you already run (Claude Code, Cursor and similar), which is where the
+model in the loop comes from. It downloads Chrome for Testing locally and drives it
+over CDP, and it addresses elements through deterministic "refs" instead of
+screenshots, which keeps token cost down. Cloud browsers are pluggable rather than
+bundled: a provider flag can point the same commands at hosted vendors including
+Browserless, Browserbase, Browser Use and Kernel. The star count deserves one honest
+caveat: the repository dates to January 2026, so those 41.9k stars accrued in about
+eight months on the strength of the Vercel name; treat them as attention, not yet as
+miles.
 
 ### Stagehand
 
@@ -106,11 +120,17 @@ layers are yours regardless of the agent you pick; the breakdown is in
 [why agents get blocked](why-does-my-ai-agent-get-blocked.md). Platform limits are
 real too: Python 3.11+, Windows and Linux, no macOS support.
 
+One near miss before the table, for completeness: Notte (~2k stars) pairs an agent
+framework with its own hosted browser infrastructure, but it is licensed SSPL-1.0,
+which the OSI has not approved as open source, so it fails this page's first test
+rather than its second or third.
+
 ## The differences that decide the choice
 
 | Project | Stars (2026-09-03) | Language | License | Browser it drives | How it reads a page |
 |---|---|---|---|---|---|
 | browser-use | 112.1k | Python | MIT | Playwright-driven browser | DOM plus screenshots |
+| agent-browser | 41.9k | Rust | Apache-2.0 | local Chrome for Testing via CDP, pluggable cloud browsers | CLI commands, deterministic element refs |
 | Stagehand | 24.1k | TypeScript, Python, Go | MIT | Playwright-compatible runtime | structured actions, DOM-first |
 | Skyvern | 22.9k | Python | AGPL-3.0 (anti-bot parts cloud-only) | Playwright | vision LLM plus page structure |
 | Nanobrowser | 13.7k | TypeScript | Apache-2.0 | your own Chrome or Edge | in-page, multi-agent |
@@ -121,8 +141,10 @@ A few honest cuts through the table:
 
 - **Most people, most tasks:** browser-use. Largest community, most examples, and
   model quality usually matters more than framework choice for ordinary tasks.
-- **You are writing your own agent:** Stagehand, and it is the only entry here that
-  is honest about being a building block rather than a product.
+- **You are writing your own agent:** Stagehand, and it is one of two entries here
+  that are honest about being a building block rather than a product.
+- **Your agent is a coding assistant in a terminal:** agent-browser, the other
+  building block, a CLI shaped for exactly that loop on a stock Chrome.
 - **Zero infrastructure, your own browser:** Nanobrowser. An extension is also the
   easiest thing on this page to try and to remove.
 - **The browser as the product:** BrowserOS.
@@ -167,10 +189,12 @@ All retrieved 2026-09-03. Star counts and claims were read from each project's o
 repository page on that date.
 
 - [browser-use/browser-use](https://github.com/browser-use/browser-use)
+- [vercel-labs/agent-browser](https://github.com/vercel-labs/agent-browser)
 - [browserbase/stagehand](https://github.com/browserbase/stagehand)
 - [Skyvern-AI/skyvern](https://github.com/Skyvern-AI/skyvern)
 - [nanobrowser/nanobrowser](https://github.com/nanobrowser/nanobrowser)
 - [browseros-ai/BrowserOS](https://github.com/browseros-ai/BrowserOS)
+- [nottelabs/notte](https://github.com/nottelabs/notte), for the near-miss note.
 - [feder-cr/AIHawk](https://github.com/feder-cr/AIHawk), plus its README in this
   repository.
 
