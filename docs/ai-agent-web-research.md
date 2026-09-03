@@ -172,6 +172,11 @@ All retrieved 2026-09-03.
   source in this repository, for the agent loop, the grounding line in its
   system prompt this page's cost notes describe.
 
+A complete run of this page's worked example, with the agent's counts checked
+against a model-free script on the same pages (they matched, 24 to 24), is in
+the repository:
+[web research, audited](https://github.com/feder-cr/AIHawk/tree/main/articles/web-research-audited).
+
 **See also:** [what is an AI web agent?](ai-web-agent-explained.md),
 [AI browser agents vs traditional scraping](ai-browser-agents-vs-traditional-scraping.md),
 [extracting data to a CSV](how-to-extract-data-to-csv-with-an-ai-agent.md),
