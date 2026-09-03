@@ -111,20 +111,9 @@ It drives the page the way a person would: the pointer moves, keys are pressed,
 and it refuses to set a form field from JavaScript even when that would be
 quicker, because a page can tell the difference.
 
-## Without a page, for scripts and cron
-
-```bash
-uvx aihawk do "Go to example.com and tell me the top headline" --openrouter-key sk-or-...
-```
-
-Same machinery, no interface, the answer on stdout.
-
 ## Options
 
-`ui` and `do` take all of these except the last one, which is `ui` only.
-
 - **`--openrouter-key`** Your key, or the `OPENROUTER_API_KEY` variable.
-  Required for `do`, optional for `ui`.
 - **`--model`** An OpenRouter model id, or `AIHAWK_MODEL`. Defaults to `z-ai/glm-4.6`.
 - **`--proxy`** Optional. `http://user:pass@proxy.example.com:8080` or
   `socks5://proxy.example.com:1080`. Host and port are both required. The
@@ -135,7 +124,7 @@ Same machinery, no interface, the answer on stdout.
 - **`--profile-dir`** A directory to keep the profile in, so logins and cookies
   survive restarts.
 - **`--headed`** Show the browser window. The interface shows you the page anyway.
-- **`--host`, `--port`** `ui` only. `127.0.0.1` and `8765`. Changing the host
+- **`--host`, `--port`** `127.0.0.1` and `8765`. Changing the host
   exposes an interface that has no authentication.
 
 Passing `--openrouter-key` puts the key in your shell history, and on Linux in
