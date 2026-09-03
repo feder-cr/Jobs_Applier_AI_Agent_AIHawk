@@ -33,7 +33,12 @@ For "any change, tell me fast," use a purpose-built monitor. The reference
 open-source option is [changedetection.io](https://github.com/dgtlmoon/changedetection.io):
 self-hostable, diffs pages on a schedule you set, and notifies over the usual
 channels. It does per-check what an agent cannot: run constantly, for free,
-without a model in the loop.
+without a model in the loop. One disclosure belongs next to that
+recommendation: this project's maintainer also publishes a
+[changedetection.io fetcher plugin](https://github.com/feder-cr/invisible_playwright-changedetectionio)
+that puts this same browser engine behind it, so the advice to use
+changedetection.io is not disinterested - it is still the right advice for
+mechanical checks, which is why it leads this section.
 
 Choose it whenever your condition is mechanical. A number appearing, a string
 disappearing, a section changing at all: these are diff conditions, and paying
