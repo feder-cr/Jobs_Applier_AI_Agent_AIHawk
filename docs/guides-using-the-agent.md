@@ -27,3 +27,7 @@ and what to expect before you spend model tokens finding out.
 - [AI agents for web research](ai-agent-web-research.md)
 - [Using an AI agent to test your own website](ai-agent-to-test-website.md)
 - [Running AIHawk's browser from Cline](running-aihawk-with-cline.md)
+- [Posting to social media with an AI agent](posting-to-social-media-with-an-ai-agent.md)
+- [Posting to Facebook with an AI agent](post-to-facebook-with-an-ai-agent.md)
+- [Posting to Instagram with an AI agent](post-to-instagram-with-an-ai-agent.md)
+- [Posting to X with an AI agent](ai-agent-post-to-x.md)
