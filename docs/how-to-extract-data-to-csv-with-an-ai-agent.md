@@ -44,9 +44,10 @@ Four choices in there do most of the work:
 One mechanical fact, early: the agent has no file-writing
 tool. The browser tools navigate, read, click and type; the CSV materializes as
 the model's final answer, nothing else. From the interface you copy it out of
-the chat; from the command line, `claude -p "..." > books.csv` works (the
-one-shot assistant path, since aihawk 0.3.0) because the answer is printed
-to stdout.
+the chat. For the RECURRING extraction, where the selectors are stable and
+no judgment is involved, the honest tool is a script on the same engine -
+[the Google Sheets page](website-data-to-google-sheets-ai-agent.md) carries
+one, executed, that prints CSV to stdout.
 
 ## What happens underneath
 

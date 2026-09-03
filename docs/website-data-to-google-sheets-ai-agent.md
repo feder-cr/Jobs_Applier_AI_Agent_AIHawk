@@ -73,21 +73,35 @@ the agent produces is its answer as text - in the interface, in the chat; from
 the command line, on stdout. That is not a gap waiting for a feature; it is
 the architecture: the agent extracts, and the spreadsheet imports.
 
-So the working pipeline has two short stages. First, extraction to CSV, which
-[has its own page](how-to-extract-data-to-csv-with-an-ai-agent.md) covering
-the prompt patterns, the cost curve and the failure modes - naming your
-columns, saying "CSV only, no commentary", bounding the scope. The one-line
-version:
+So the working pipeline has two short stages. First, extraction to CSV. For a
+one-off, the agent is the right tool and
+[the CSV page](how-to-extract-data-to-csv-with-an-ai-agent.md) covers the
+prompt patterns, the cost curve and the failure modes. For the RECURRING
+version this page is about, the extraction is better off as a script on the
+same engine, because the selectors are stable and a model re-deciding them
+every morning is cost without judgment:
 
-```bash
-claude -p "Go to https://books.toscrape.com/. For each book on the first
-page, extract the title and the price. Reply with CSV only: header line
-title,price, one line per book, no commentary." > books.csv
+```python
+# extract_books.py - the watched listing to CSV on stdout
+from invisible_playwright import InvisiblePlaywright
+
+with InvisiblePlaywright(seed=7) as browser:
+    page = browser.new_page()
+    page.goto("https://books.toscrape.com/", wait_until="domcontentloaded")
+    print("title,price_gbp")
+    for card in page.locator("article.product_pod").all():
+        title = card.locator("h3 a").get_attribute("title").replace('"', '""')
+        price = card.locator(".price_color").inner_text().lstrip("£")
+        print(f'"{title}",{price}')
 ```
 
-(That is the assistant CLI in one-shot mode with AIHawk's browser attached
-over MCP; since aihawk 0.3.0 that is the scripted path, and the one-time
-setup is on [the monitoring page](how-to-monitor-a-page-with-an-ai-agent.md).)
+Since aihawk 0.3.0 there is no headless aihawk command, and a recurring
+extraction with stable selectors does not want one: it is mechanical work, and
+the same stealth engine AIHawk drives is on PyPI as a plain Python library
+(`pip install invisible-playwright`) with Playwright's API. Executed on
+2026-09-03, `python extract_books.py > books.csv` produced a header plus
+twenty rows, starting `"A Light in the Attic",51.77`. No model and no API key
+are involved anywhere in this path.
 
 Second, the import, which is Google's half and needs no agent:
 
@@ -98,7 +112,7 @@ Second, the import, which is Google's half and needs no agent:
   host, a paste service with raw URLs, your own server - one cell of
   `IMPORTDATA("https://your-host/books.csv")` makes the sheet re-read it.
   Combine that with a scheduled extraction and the sheet updates itself: cron
-  runs the one-shot and drops the file, `IMPORTDATA` picks it up. The
+  runs the script and drops the file, `IMPORTDATA` picks it up. The
   scheduling half, including the settings that keep a recurring run stable, is
   on [the monitoring page](how-to-monitor-a-page-with-an-ai-agent.md); it
   transfers unchanged.
@@ -151,7 +165,7 @@ page, served HTML, table or list shape. Free and self-refreshing beats cents
 and a model every time the mechanical tool can reach.
 
 **How do I make the sheet update on a schedule?** Schedule the extraction
-(cron plus a one-shot assistant run, per [the monitoring page](how-to-monitor-a-page-with-an-ai-agent.md)),
+(cron plus the script above, per [the monitoring page](how-to-monitor-a-page-with-an-ai-agent.md)),
 write the CSV to a web-served location, and point `IMPORTDATA` at it. The
 sheet re-fetches; nothing touches the sheet directly.
 

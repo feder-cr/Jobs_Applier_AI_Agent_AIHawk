@@ -90,28 +90,24 @@ What runs well today, per portal:
    anything in the prompt travels through the model provider. The profile
    directory keeps the session.
 
-2. **Extract on a schedule.** With the login living in the profile, the
-   monthly run is one `do` command, and the flags that make a recurring run
-   stable are the same three
-   [the monitoring page](how-to-monitor-a-page-with-an-ai-agent.md)
-   establishes: `--profile-dir` (absolute path) so the session is found,
-   `--seed` so every visit is the same browser rather than a parade of new
-   devices, and the API key in `OPENROUTER_API_KEY` rather than on the
-   command line.
+2. **Extract on a rhythm, honestly.** Since aihawk 0.3.0 there is no headless
+   aihawk command to put in cron, and this page will not pretend a scheduler
+   is doing work a person starts. The monthly run is a five-minute ritual:
+   open the same session (the profile still holds the login), paste the same
+   instruction - "Find the most recent invoice. Reply with CSV only:
+   number,date,amount,due_date, one line, no commentary." - and append the
+   line to your ledger file. Same `--seed` and `--profile-dir` as step 1, so
+   every visit is the same returning browser rather than a parade of new
+   devices.
 
-   ```
-   23 7 3 * *  claude -p "Go to <portal URL>. Find the most recent invoice. \
-   Reply with CSV only: number,date,amount,due_date, one line, no \
-   commentary." >> $HOME/invoices/ledger.csv
-   ```
-
-   That is the assistant one-shot with AIHawk's browser attached over MCP
-   (since aihawk 0.3.0; the one-time setup, with `STEALTHFOX_SEED` and
-   `STEALTHFOX_PROFILE_DIR` on the registration, is on
-   [the monitoring page](how-to-monitor-a-page-with-an-ai-agent.md)), in cron
-   on the 3rd of each month, at an off-round minute for the
-   reasons the monitoring page gives. One portal per line, different seeds if
-   you want different identities per supplier.
+   If a portal of yours is stable enough that finding the newest invoice is
+   the same three clicks every month, that is no longer judgment work: the
+   engine behind AIHawk is on PyPI as a Python library with Playwright's API,
+   and a short script with your portal's selectors plus `profile_dir` makes
+   the run schedulable for real - the pattern, with an executed example, is
+   on [the monitoring page](how-to-monitor-a-page-with-an-ai-agent.md). This
+   page does not print a portal script because your portal's selectors are
+   yours; test it against your own portal before trusting it with money.
 
 3. **Verify like it is money, because it is.** Every number the agent returns
    is a model's reading of a page. Before a ledger line drives a payment,

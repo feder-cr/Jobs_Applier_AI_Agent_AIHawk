@@ -164,9 +164,9 @@ def selftest():
         bad = {
             "banned topic": ("docs/spam.md",
                              b"How to automate your job application flow\n"),
-            "em-dash": ("docs/dash.md", "text — more\n".encode()),
+            "em-dash": ("docs/dash.md", "text \u2014 more\n".encode()),
             "invisible codepoint": ("docs/zw.md",
-                                    "wor​d\n".encode("utf-8")),
+                                    "wor\u200bd\n".encode("utf-8")),
             "removed command": ("docs/old.md",
                                 b'run `uvx aihawk do "task"` daily\n'),
             "argv-list command": ("docs/argv.md",
