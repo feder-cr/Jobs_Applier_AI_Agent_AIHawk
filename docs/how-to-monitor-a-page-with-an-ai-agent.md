@@ -67,20 +67,27 @@ session closed, cents per check on the default model and roughly a minute of
 wall clock. Daily is comfortable; every five minutes is a bill and, as covered
 below, a signature.
 
-## Scheduling it: the CLI exists, and this is what it does
+## Scheduling it: the one-shot shape, as of aihawk 0.3.0
 
-AIHawk has a headless entrypoint built for exactly this, and its README files
-it under "for scripts and cron":
+Since 0.3.0 AIHawk itself is interactive-only (`uvx aihawk ui`); the old `do`
+subcommand is gone. The one-shot shape did not disappear, it moved: your
+assistant's CLI runs a single instruction non-interactively, with AIHawk's
+browser attached over MCP. One-time setup, then the check itself:
 
 ```bash
-uvx aihawk do "Go to <your page>. Report the current title and price of the
-first listed item, one line, no commentary." --seed 7 --profile-dir ~/.hawk-mon
+claude mcp add -s user stealth -e STEALTHFOX_SEED=7 \
+  -e STEALTHFOX_PROFILE_DIR=$HOME/.hawk-mon -- uvx invisible-playwright-mcp
+
+claude -p "Go to <your page>. Report the current title and price of the
+first listed item, one line, no commentary."
 ```
 
-`do` runs one instruction in the stealth browser, prints the model's answer to
-stdout, and exits; the browser is opened for the run and closed after. That
-shape composes with cron, systemd timers, or Windows Task Scheduler the way any
-command does: redirect stdout to a dated file and you have a log of answers.
+`claude -p` runs one instruction, prints the answer to stdout, and exits; the
+browser session opens for the run and closes after. That shape composes with
+cron, systemd timers, or Windows Task Scheduler the way any command does:
+redirect stdout to a dated file and you have a log of answers. The seed and
+the persistent profile now live on the server registration (the `-e` lines)
+instead of per-run flags, which is where a scheduled job wants them anyway.
 
 Three flags matter for a recurring check:
 
@@ -98,12 +105,13 @@ Three flags matter for a recurring check:
 A real crontab line, deliberately not on the hour:
 
 ```
-17 8 * * *  . $HOME/.hawk-env && uvx aihawk do "..." >> $HOME/hawk-mon/$(date +\%F).txt 2>&1
+17 8 * * *  claude -p "..." >> $HOME/hawk-mon/$(date +\%F).txt 2>&1
 ```
 
-with the key exported from `~/.hawk-env`, readable only by you. The interface
-(`uvx aihawk ui`) has no scheduler; the recurring path is `do` plus whatever
-scheduler your system already has.
+No API key in the crontab: on the assistant path the model comes from the
+assistant's own login, and the browser needs no key at all. The interface
+(`uvx aihawk ui`) has no scheduler; the recurring path is the assistant
+one-shot plus whatever scheduler your system already has.
 
 ## What to store between runs
 
@@ -115,11 +123,11 @@ which means the memory of the monitor is yours to keep. Two files do it:
   feeds the last run's output back in:
 
   ```bash
-  uvx aihawk do "Here is what this page said on the last check:
+  claude -p "Here is what this page said on the last check:
   $(cat ~/hawk-mon/last.txt)
   Now go to <your page> and report only meaningful differences from that,
   or the exact word NOCHANGE if nothing that matters changed." \
-    --seed 7 --profile-dir ~/.hawk-mon | tee ~/hawk-mon/last.txt
+    | tee ~/hawk-mon/last.txt
   ```
 
   Asking for a sentinel word like `NOCHANGE` makes the no-op case scriptable:
@@ -165,7 +173,8 @@ remember that with `--seed` unset, every run was a different browser.
 ## Short answers to the questions that lead here
 
 **Can an AI agent monitor a website for changes?** Yes, mechanically: schedule
-`uvx aihawk do` with a prompt that carries the previous state and asks for
+a one-shot assistant run (`claude -p`, with AIHawk's browser attached over
+MCP) with a prompt that carries the previous state and asks for
 meaningful differences. Whether it should depends on the question: byte-level
 "did it change" belongs to a diff tool; "does the change matter" is the
 agent's case.
@@ -176,10 +185,10 @@ the check requires reading: meaningful-change questions, prose thresholds,
 summarized deltas.
 
 **How do I schedule AIHawk to check a page every day?** Cron (or any
-scheduler) plus `uvx aihawk do "..."` with `OPENROUTER_API_KEY` in the
-environment, `--seed` for a stable identity, `--profile-dir` for a persistent
-profile, and stdout redirected somewhere dated. There is no built-in scheduler;
-the CLI is the building block on purpose.
+scheduler) plus `claude -p "..."` with the stealth MCP server registered once,
+`STEALTHFOX_SEED` for a stable identity, `STEALTHFOX_PROFILE_DIR` for a
+persistent profile, and stdout redirected somewhere dated. There is no
+built-in scheduler; the one-shot run is the building block on purpose.
 
 **What does each check cost?** A browser session plus a short model
 conversation: cents on the default model, roughly a minute of wall clock. The
@@ -204,9 +213,11 @@ All retrieved 2026-09-03.
   the self-hosted diff-based monitor referenced as the plain-tool baseline,
   including its scheduling and notification features.
 - [feder-cr/AIHawk](https://github.com/feder-cr/AIHawk), plus its README and
-  source in this repository: the `do` command, its "scripts and cron" framing,
-  the key-in-environment advice, and the one-shot open-run-close behavior in
-  [`src/aihawk/runner.py`](https://github.com/feder-cr/AIHawk/blob/main/src/aihawk/runner.py).
+  source in this repository: the interface entrypoint and the
+  open-run-close session behavior in
+  [`src/aihawk/runner.py`](https://github.com/feder-cr/AIHawk/blob/main/src/aihawk/runner.py),
+  and [invisible-playwright-mcp](https://github.com/feder-cr/invisible-playwright-mcp)
+  for the `STEALTHFOX_*` variables the scheduled path rides on.
 
 **See also:** [extracting data to a CSV](how-to-extract-data-to-csv-with-an-ai-agent.md),
 [agent retry loops and rate limits](agent-retry-loops-rate-limits.md),

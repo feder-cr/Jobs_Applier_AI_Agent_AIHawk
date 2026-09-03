@@ -83,11 +83,14 @@ conversation holds the accumulating picture, and you can steer mid-walk. Or
 scripted, one question per run:
 
 ```bash
-uvx aihawk do "Go to https://books.toscrape.com/. Walk the first three pages
+claude -p "Go to https://books.toscrape.com/. Walk the first three pages
 of the catalog and report: how many books are priced above forty pounds, and
 the three most common price bands you observe. Ground every number in what
 the pages show; do not estimate."
 ```
+
+(The one-shot assistant path, with AIHawk's browser attached over MCP - since
+aihawk 0.3.0 the aihawk command itself is interactive-only.)
 
 Prompt habits that separate usable research from confident noise:
 
@@ -140,7 +143,7 @@ interaction-gated content, or walk an archive in order. Different machine.
 
 **Can AIHawk do deep research?** It does the browser half well: driven
 reading of hard sources, through an MCP client where your assistant
-synthesizes, or via `aihawk do` for scripted questions. It does not fan out
+synthesizes, interactively or as scripted one-shots. It does not fan out
 across twenty sources in parallel, and this page does not pretend otherwise.
 
 **How do I stop a research agent from making things up?** Demand quotes tied

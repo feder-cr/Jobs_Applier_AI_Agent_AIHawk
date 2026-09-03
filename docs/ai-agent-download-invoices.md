@@ -100,13 +100,16 @@ What runs well today, per portal:
    command line.
 
    ```
-   23 7 3 * *  . $HOME/.hawk-env && uvx aihawk do "Go to <portal URL>. Find \
-   the most recent invoice. Reply with CSV only: number,date,amount,due_date, \
-   one line, no commentary." --seed 11 --profile-dir $HOME/.hawk-invoices \
-   >> $HOME/invoices/ledger.csv
+   23 7 3 * *  claude -p "Go to <portal URL>. Find the most recent invoice. \
+   Reply with CSV only: number,date,amount,due_date, one line, no \
+   commentary." >> $HOME/invoices/ledger.csv
    ```
 
-   That is cron on the 3rd of each month, at an off-round minute for the
+   That is the assistant one-shot with AIHawk's browser attached over MCP
+   (since aihawk 0.3.0; the one-time setup, with `STEALTHFOX_SEED` and
+   `STEALTHFOX_PROFILE_DIR` on the registration, is on
+   [the monitoring page](how-to-monitor-a-page-with-an-ai-agent.md)), in cron
+   on the 3rd of each month, at an off-round minute for the
    reasons the monitoring page gives. One portal per line, different seeds if
    you want different identities per supplier.
 

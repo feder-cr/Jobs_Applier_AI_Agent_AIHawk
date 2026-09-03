@@ -22,8 +22,8 @@ on a page you serve yourself; the mechanics transfer, the risk does not.
 
 ## What you actually say
 
-A working instruction, typed into the AIHawk interface or passed to
-`uvx aihawk do`:
+A working instruction, typed into the AIHawk interface or handed to your
+assistant with AIHawk's browser attached:
 
 > Go to https://books.toscrape.com/. For each book on the first two pages,
 > extract the title and the price. Reply with CSV only: a header line
@@ -44,8 +44,9 @@ Four choices in there do most of the work:
 One mechanical fact, early: the agent has no file-writing
 tool. The browser tools navigate, read, click and type; the CSV materializes as
 the model's final answer, nothing else. From the interface you copy it out of
-the chat; from the command line, `uvx aihawk do "..." > books.csv` works
-because the answer is printed to stdout.
+the chat; from the command line, `claude -p "..." > books.csv` works (the
+one-shot assistant path, since aihawk 0.3.0) because the answer is printed
+to stdout.
 
 ## What happens underneath
 
@@ -186,7 +187,7 @@ All retrieved 2026-09-03.
   source in this repository: the loop, the 25-turn default, the 8,000-character
   tool-result clip and the reply ceiling are in
   [`src/aihawk/agent.py`](https://github.com/feder-cr/AIHawk/blob/main/src/aihawk/agent.py),
-  and the stdout behavior of `aihawk do` in
+  and the CLI surface in
   [`src/aihawk/cli.py`](https://github.com/feder-cr/AIHawk/blob/main/src/aihawk/cli.py).
 
 A complete worked run of this task shape, with the real transcript, the two

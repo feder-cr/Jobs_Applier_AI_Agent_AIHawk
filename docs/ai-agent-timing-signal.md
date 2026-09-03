@@ -101,7 +101,7 @@ where the wins are:
   session ten seconds later confirms the verdict.
 
 If you are building your own harness above an agent loop - executing its actions
-yourself, or wrapping `aihawk do` in a script - you own the timing, and then the rule
+yourself, or wrapping a one-shot assistant run in a script - you own the timing, and then the rule
 is: vary it, and make it depend on the step. A uniform delay is its own tell. A
 `sleep(1.0)` between every action just moves the cluster from "instant" to "exactly
 one second", and a tight cluster at one second is as machine-regular as a tight

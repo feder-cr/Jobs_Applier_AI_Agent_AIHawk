@@ -80,10 +80,14 @@ columns, saying "CSV only, no commentary", bounding the scope. The one-line
 version:
 
 ```bash
-uvx aihawk do "Go to https://books.toscrape.com/. For each book on the first
+claude -p "Go to https://books.toscrape.com/. For each book on the first
 page, extract the title and the price. Reply with CSV only: header line
 title,price, one line per book, no commentary." > books.csv
 ```
+
+(That is the assistant CLI in one-shot mode with AIHawk's browser attached
+over MCP; since aihawk 0.3.0 that is the scripted path, and the one-time
+setup is on [the monitoring page](how-to-monitor-a-page-with-an-ai-agent.md).)
 
 Second, the import, which is Google's half and needs no agent:
 
@@ -94,10 +98,9 @@ Second, the import, which is Google's half and needs no agent:
   host, a paste service with raw URLs, your own server - one cell of
   `IMPORTDATA("https://your-host/books.csv")` makes the sheet re-read it.
   Combine that with a scheduled extraction and the sheet updates itself: cron
-  runs `aihawk do` and drops the file, `IMPORTDATA` picks it up. The
-  scheduling half, including the flags that keep a recurring run stable and
-  where the API key should live, is on
-  [the monitoring page](how-to-monitor-a-page-with-an-ai-agent.md); it
+  runs the one-shot and drops the file, `IMPORTDATA` picks it up. The
+  scheduling half, including the settings that keep a recurring run stable, is
+  on [the monitoring page](how-to-monitor-a-page-with-an-ai-agent.md); it
   transfers unchanged.
 
 Resist the urge to have the agent drive the Google Sheets web interface and
@@ -148,7 +151,7 @@ page, served HTML, table or list shape. Free and self-refreshing beats cents
 and a model every time the mechanical tool can reach.
 
 **How do I make the sheet update on a schedule?** Schedule the extraction
-(cron plus `uvx aihawk do`, per [the monitoring page](how-to-monitor-a-page-with-an-ai-agent.md)),
+(cron plus a one-shot assistant run, per [the monitoring page](how-to-monitor-a-page-with-an-ai-agent.md)),
 write the CSV to a web-served location, and point `IMPORTDATA` at it. The
 sheet re-fetches; nothing touches the sheet directly.
 
@@ -175,7 +178,7 @@ All retrieved 2026-09-03.
   the template class recommended for recurring mechanical work.
 - [feder-cr/AIHawk](https://github.com/feder-cr/AIHawk), plus its README and
   source in this repository, for the no-file-tool, answer-on-stdout
-  architecture of `aihawk do`.
+  architecture of the agent loop.
 
 **See also:** [extracting data to a CSV](how-to-extract-data-to-csv-with-an-ai-agent.md),
 [monitoring a page for changes](how-to-monitor-a-page-with-an-ai-agent.md),

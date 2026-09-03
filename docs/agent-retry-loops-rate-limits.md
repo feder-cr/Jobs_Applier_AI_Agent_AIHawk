@@ -90,7 +90,8 @@ again. The half that no product can supply is how often you run it.
 - **Mind the exit, not the browser count.** The unit a counter sees is requests per
   address and per account. Several agents behind one exit IP, each politely pacing
   itself, are one very busy client to the site.
-- **If you script it, budget it.** `aihawk do` makes it easy to put an agent in a
+- **If you script it, budget it.** The assistant one-shot (`claude -p` with
+  AIHawk's browser attached over MCP) makes it easy to put an agent in a
   script or cron job, which makes it easy to build an accidental refresh storm. Give
   the script a budget and backoff, because that is the layer that owns the schedule:
 
@@ -99,7 +100,7 @@ import subprocess, time
 
 def run_with_backoff(task, *, max_attempts=3):
     for attempt in range(max_attempts):
-        r = subprocess.run(["uvx", "aihawk", "do", task],
+        r = subprocess.run(["claude", "-p", task],
                            capture_output=True, text=True)
         if r.returncode == 0:
             return r.stdout
@@ -155,8 +156,8 @@ re-issuing the same instruction immediately is still a retry loop, just with you
 it.
 
 **Where should backoff live?** In whatever decides when tasks run: your habits at
-the prompt, or the script wrapping `aihawk do`. No browser setting paces a loop that
-was told to try until it succeeds.
+the prompt, or the script wrapping the one-shot run. No browser setting paces a loop
+that was told to try until it succeeds.
 
 **Is a per-account quota a fingerprint problem?** No. A quota is counted against the
 account, not the browser, so a better fingerprint does nothing for it. Budget the
