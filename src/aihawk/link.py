@@ -1,9 +1,10 @@
 """One long-lived MCP connection, shared by the conversation and the live view.
 
-`runner.drive` opens a session, runs one task and closes it. The UI needs the
-opposite: a connection that outlives any single instruction, because the browser
-has to still be there when the next line is typed and the live pane has to keep
-photographing it in between.
+The connection outlives any single instruction, because the browser has to still
+be there when the next line is typed and the live pane has to keep photographing
+it in between. There was a second, shorter-lived form of this - `runner.drive`,
+one task then close, behind an `aihawk do` subcommand - and both were removed on
+2026-09-03: one way in is the whole point of the page this serves.
 
 WHY THIS IS A CLIENT AND NOT AN IMPORT. The same shell used to run inside the MCP
 server process and reach the browser through `registry`, which is a Python object

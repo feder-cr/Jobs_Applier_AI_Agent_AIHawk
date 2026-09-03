@@ -1,4 +1,4 @@
-"""aihawk CLI: drive a stealth browser with an LLM, from one command or from a page."""
+"""aihawk CLI: serve the page that drives a stealth browser with an LLM."""
 from __future__ import annotations
 
 import asyncio
@@ -7,7 +7,6 @@ import os
 import click
 
 from .llm import BASE_URL, resolve_key, resolve_model
-from .runner import drive
 
 BROWSER_OPTIONS = [
     click.option("--proxy", default=None, help="Proxy URL for the stealth browser."),
@@ -29,33 +28,14 @@ def browser_options(fn):
 def main() -> None:
     """Drive a stealth browser with an LLM.
 
-    The model comes from OpenRouter and nowhere else, so `do` needs a key:
-    pass --openrouter-key or set OPENROUTER_API_KEY. `ui` runs without one on
-    a literal-command placeholder, which is enough to see the interface work.
+    The model comes from OpenRouter and nowhere else: pass --openrouter-key or
+    set OPENROUTER_API_KEY. Without one the interface still starts, on a
+    literal-command placeholder, which is enough to see it work.
 
-    Said here rather than only in the subcommands because this is the first
-    page anybody reads, and a key requirement discovered from an error message
-    is a key requirement discovered too late.
+    Said here rather than only in the subcommand because this is the first page
+    anybody reads, and a key requirement discovered from an error message is a
+    key requirement discovered too late.
     """
-
-
-@main.command()
-@click.argument("task")
-@click.option("--openrouter-key", default=None,
-              help="OpenRouter API key (or env OPENROUTER_API_KEY).")
-@click.option("--model", default=None, help="Model id (or env AIHAWK_MODEL).")
-@browser_options
-def do(task, openrouter_key, model, proxy, seed, headed, binary, profile_dir):
-    """Run TASK in a stealth browser and print the result."""
-    try:
-        key = resolve_key(openrouter_key, os.environ)
-    except RuntimeError as e:
-        raise click.ClickException(str(e))
-    mdl = resolve_model(model, os.environ)
-    opts = {"proxy": proxy, "seed": seed, "headed": headed,
-            "binary": binary, "profile_dir": profile_dir}
-    result = asyncio.run(drive(task, opts=opts, key=key, model=mdl))
-    click.echo(result)
 
 
 @main.command()

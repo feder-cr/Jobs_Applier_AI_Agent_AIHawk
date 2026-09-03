@@ -9,7 +9,7 @@ to catch, so the tool's own success string is never the assertion.
 
 No model is involved. The LLM half needs an OpenRouter key, there is none on
 this machine, and a faked one would prove nothing about the browser. What is
-exercised is the other half of `aihawk do`: the tools the model is handed, and
+exercised is the half a model never sees directly: the tools it is handed, and
 what they actually do to a page.
 
 RUN THEM WITH (they are deselected by default, see `addopts` in pyproject):
@@ -403,7 +403,7 @@ def _result_text_all(result):
 
 @pytest.fixture(scope="session")
 def browser():
-    """One browser for the module, spawned the way `aihawk do` spawns it.
+    """One browser for the module, spawned the way the interface spawns it.
 
     `child_env` comes from the package rather than being rebuilt here, so a
     change to the option mapping shows up as a broken drive instead of passing
