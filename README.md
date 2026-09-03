@@ -24,21 +24,37 @@
 
 The only question is where the model comes from.
 
-### 1. You already use Claude Code, Claude Desktop or Cursor
+### 1. You already use an assistant that can run tools
 
 Your assistant brings the model. You add this browser to it, and nothing changes
 about how you work.
 
+**Claude Code:**
+
 ```bash
 claude mcp add -s user stealth -- uvx invisible-playwright-mcp
+```
+
+**Codex:**
+
+```bash
+codex mcp add stealth -- uvx invisible-playwright-mcp
+```
+
+**Gemini CLI:**
+
+```bash
+gemini mcp add -s user stealth uvx invisible-playwright-mcp
 ```
 
 Then ask your assistant, in the window you already have open:
 
 > Go to news.ycombinator.com and give me the top five titles.
 
-For Claude Desktop, Cursor and the rest, which take a config file instead, the
-block to paste is in the [server's README](https://github.com/feder-cr/invisible-playwright-mcp).
+Claude Desktop, Cursor, VS Code, Windsurf, Zed and Cline take a config file
+instead, and the file is not the same shape for all of them. Each one is
+written out in the
+[server's README](https://github.com/feder-cr/invisible-playwright-mcp#adding-it-to-your-client).
 
 ### 2. You don't, or you want to watch it work
 
