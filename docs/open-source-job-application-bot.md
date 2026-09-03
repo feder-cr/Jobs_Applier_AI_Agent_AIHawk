@@ -66,9 +66,11 @@ There was a second, quieter problem: the original bot was welded to the markup
 of the pages it automated. Selectors written for a specific flow break when the
 page changes, and pages change constantly - some of that is ordinary
 redesign, some of it is aimed. A tool built as a collection of site-specific
-scripts is in a maintenance race it cannot win, which is why this wiki's pages
-name no job platforms at all: the durable knowledge is the mechanics that are
-the same everywhere, not any one site's layout.
+scripts is in a maintenance race it cannot win, which is why this wiki's
+how-to pages teach the mechanics that are the same everywhere, never any one
+site's layout - and why the pages that do name a platform, like
+[the LinkedIn cluster](automating-linkedin-job-applications.md), describe
+what exists and what its terms say rather than how to script it.
 
 So the project's answer to the criticism is not a defense of spray. It is
 agreement, followed by a change of direction: the metric that pays the
