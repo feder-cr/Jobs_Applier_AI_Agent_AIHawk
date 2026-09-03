@@ -1,8 +1,8 @@
 """The command line as a person meets it.
 
-No browser and no model are involved here: `aihawk.cli.drive` is replaced by a
-recorder, so every test asserts what the CLI decided and handed over, not what
-the browser did.
+No browser and no model are involved: `Link` is replaced by a recorder that
+stops the command the moment it would connect, so every test asserts what the
+CLI decided and handed over, not what the browser did.
 
 The theme of this file is the API key. `aihawk` takes an OpenRouter key and
 nothing else, and a key that reaches the terminal is a key in a scrollback
@@ -10,6 +10,20 @@ buffer, a CI log and a screen recording. FAKE_KEY below carries the marker
 CANARY on purpose so any echo of it, whole or truncated after the prefix, is
 recognisable; test_the_key_detector_is_not_vacuous proves the detector can
 actually see a leak instead of always printing PASS.
+
+⛔ THIS FILE USED TO DRIVE `aihawk do`, WHICH NO LONGER EXISTS. The subcommand
+was removed on 2026-09-03: one way in, and it is `ui`. Most of what was here
+tested the option surface and the key handling, and both are still real, so
+those tests moved onto `ui` rather than being deleted with the command. Four
+guarantees genuinely died with it and are recorded here so nobody hunts for
+them later:
+
+  * "no key anywhere exits 1 and names both ways to supply one" - `ui` does not
+    require a key at all. It starts on the literal-command placeholder instead,
+    which is a deliberate difference and not a regression;
+  * "the TASK argument is required", "the task reaches drive verbatim" and "the
+    result is printed verbatim with one trailing newline" - `ui` takes no task
+    and prints no result.
 """
 from __future__ import annotations
 
@@ -20,6 +34,7 @@ import pytest
 from click.testing import CliRunner
 
 import aihawk.cli as climod
+import aihawk.link as link_mod
 from aihawk.llm import BASE_URL, DEFAULT_MODEL
 from aihawk.runner import child_env
 
@@ -29,7 +44,7 @@ FAKE_KEY = "sk-or-v1-CANARY-9f3b2a7c-do-not-echo"
 KEY_MARKER = "CANARY"
 DECOY_ENV_KEY = "sk-or-v1-CANARY-env-decoy-must-lose"
 
-# Every option `aihawk do` declares itself. --help is added by click at parse
+# Every option `aihawk ui` declares itself. --help is added by click at parse
 # time and is not one of ours, so it is checked against the rendered help only.
 DECLARED_OPTIONS = {
     "--openrouter-key",
@@ -39,6 +54,8 @@ DECLARED_OPTIONS = {
     "--headed",
     "--binary",
     "--profile-dir",
+    "--host",
+    "--port",
 }
 
 
@@ -59,32 +76,36 @@ def clean_provider_env(monkeypatch):
         monkeypatch.delenv(name, raising=False)
 
 
-class DriveRecorder:
-    """Stands in for runner.drive: records the call, returns a fixed result."""
+class _Stop(Exception):
+    """Raised by the recorder so the command stops before it serves anything."""
 
-    def __init__(self, result: str = "RESULT", raises: Exception | None = None):
-        self.result = result
-        self.raises = raises
+
+class LinkRecorder:
+    """Stands in for `Link`: records how it was constructed, then stops.
+
+    `ui` decides everything this file is about - which key, which model, which
+    browser options - and then hands them to `Link`. Recording that hand-over is
+    the last point where the decisions are visible and the first point where a
+    real browser would be launched, so it is where the command is stopped.
+    """
+
+    def __init__(self):
         self.calls: list[dict] = []
 
-    async def __call__(self, task, *, opts, key, model):
-        self.calls.append(
-            {"task": task, "opts": dict(opts), "key": key, "model": model}
-        )
-        if self.raises is not None:
-            raise self.raises
-        return self.result
+    def __call__(self, opts=None, *, key=None):
+        self.calls.append({"opts": dict(opts or {}), "key": key})
+        raise _Stop
 
     @property
     def call(self) -> dict:
-        assert len(self.calls) == 1, f"expected one drive call, got {len(self.calls)}"
+        assert len(self.calls) == 1, f"expected one Link, got {len(self.calls)}"
         return self.calls[0]
 
 
 @pytest.fixture
-def drive(monkeypatch):
-    rec = DriveRecorder()
-    monkeypatch.setattr(climod, "drive", rec)
+def link(monkeypatch):
+    rec = LinkRecorder()
+    monkeypatch.setattr(link_mod, "Link", rec)
     return rec
 
 
@@ -92,295 +113,204 @@ def run(*args, **kwargs):
     return CliRunner().invoke(climod.main, list(args), **kwargs)
 
 
+def stopped_at_link(result) -> bool:
+    """The command got as far as connecting, which is as far as we let it."""
+    return isinstance(result.exception, _Stop)
+
+
 # --------------------------------------------------------------------------
-# the key: where it comes from, and what happens when it is missing
+# the key: where it comes from
 # --------------------------------------------------------------------------
 
-def test_missing_key_exits_one_and_names_both_ways_to_supply_one(drive):
-    """No key on the command line and none in the environment is a clean refusal.
-
-    Exit code 1 is asserted, not merely "non-zero": 2 would mean click rejected
-    the command line before our own check ran, and 0 with a message on stderr is
-    the classic known-bad here, since a shell script testing $? would carry on.
-    The message must name both routes; naming only the flag strands a user who
-    keeps the key in the environment, and vice versa.
-    """
-    result = run("do", "read the page")
-
-    assert result.exit_code == 1, result.output
-    assert "--openrouter-key" in result.output
-    assert "OPENROUTER_API_KEY" in result.output
-    assert drive.calls == [], "a missing key must not spawn the browser"
-
-
-def test_explicit_key_wins_and_the_environment_is_not_consulted(drive, monkeypatch):
-    """--openrouter-key beats a key already exported in the shell.
-
-    Known-bad: resolve_key(os.environ.get(...) or explicit, ...) reads perfectly
-    well and silently prefers the environment, so a user who passes a second
-    account's key on the command line would keep billing the first one.
-    """
+def test_explicit_key_wins_and_the_environment_is_not_consulted(link, monkeypatch):
+    """A flag beats a variable. The decoy in the environment must lose, and it
+    is a DIFFERENT string so "the right one was used" is provable rather than
+    inferred from both being present."""
     monkeypatch.setenv("OPENROUTER_API_KEY", DECOY_ENV_KEY)
 
-    result = run("do", "t", "--openrouter-key", FAKE_KEY)
+    result = run("ui", "--openrouter-key", FAKE_KEY)
 
-    assert result.exit_code == 0, result.output
-    assert drive.call["key"] == FAKE_KEY
-    assert drive.call["key"] != DECOY_ENV_KEY
+    assert stopped_at_link(result)
+    assert link.call["key"] == FAKE_KEY
+    assert link.call["key"] != DECOY_ENV_KEY
 
 
-def test_key_is_taken_from_the_environment_when_the_flag_is_absent(drive, monkeypatch):
-    """The documented fallback works. Known-bad: reading a differently spelled
-    variable, which would leave every environment user stranded on the error
-    path with a key correctly exported."""
+def test_key_is_taken_from_the_environment_when_the_flag_is_absent(link, monkeypatch):
     monkeypatch.setenv("OPENROUTER_API_KEY", FAKE_KEY)
 
-    result = run("do", "t")
+    result = run("ui")
 
-    assert result.exit_code == 0, result.output
-    assert drive.call["key"] == FAKE_KEY
+    assert stopped_at_link(result)
+    assert link.call["key"] == FAKE_KEY
 
 
-def test_an_openai_key_in_the_environment_is_not_accepted(drive, monkeypatch):
-    """Only an OpenRouter key, which is the owner's second requirement.
+def test_an_openai_key_in_the_environment_is_not_accepted(link, monkeypatch):
+    """OPENAI_API_KEY is not OPENROUTER_API_KEY, and treating it as one would
+    send somebody's OpenAI credential to a different company's endpoint.
 
-    Known-bad: adding OPENAI_API_KEY to the fallback chain "for convenience".
-    That is not a convenience, it is a credential for one vendor being sent to
-    another vendor's endpoint by a user who never asked for it. The refusal is
-    asserted through the exit code and through drive never being called.
+    With no OpenRouter key anywhere, `ui` starts on the placeholder: what must
+    NOT happen is that it starts with a model, holding the OpenAI key.
     """
     monkeypatch.setenv("OPENAI_API_KEY", FAKE_KEY)
 
-    result = run("do", "t")
+    result = run("ui")
 
-    assert result.exit_code == 1, result.output
-    assert drive.calls == []
-    assert not key_leaked(result.output)
+    assert stopped_at_link(result)
+    assert link.call["key"] is None, (
+        "an OPENAI_API_KEY was accepted as an OpenRouter key")
+    assert "literal commands only" in result.output, (
+        "it did not fall back to the placeholder: %r" % result.output)
 
 
 def test_the_command_offers_no_second_provider():
-    """The set of options is pinned, so a new provider cannot arrive unnoticed.
+    """One provider, and the CLI must not imply otherwise.
 
-    Known-bad: --openai-key, --anthropic-key or --base-url appearing later.
-    Equality is used rather than a membership check precisely so that an added
-    option fails this test instead of passing it.
+    A flag named for another vendor would be a promise this package cannot keep:
+    the loop talks to OpenRouter's endpoint and nothing else.
     """
-    options = [p for p in climod.do.params if isinstance(p, click.Option)]
-    names = {opt for param in options for opt in param.opts}
-    arguments = [p.name for p in climod.do.params if isinstance(p, click.Argument)]
-
-    assert names == DECLARED_OPTIONS
-    assert arguments == ["task"]
-    assert BASE_URL.startswith("https://openrouter.ai/"), BASE_URL
+    rendered = run("ui", "--help").output
+    for foreign in ("--openai", "--anthropic", "--api-base", "--base-url"):
+        assert foreign not in rendered, "the CLI offers %s" % foreign
 
 
-def test_the_cli_does_not_put_the_key_into_its_own_environment(drive, monkeypatch):
-    """The key stays a parameter and never becomes an environment variable.
+def test_the_cli_does_not_put_the_key_into_its_own_environment(link, monkeypatch):
+    """Resolving the key must not export it.
 
-    Known-bad: passing it down by writing os.environ["OPENROUTER_API_KEY"], the
-    obvious shortcut, which would then be inherited by the browser child process
-    that runner.child_env exists to strip it from.
+    Known-bad: a resolve step that does `os.environ.setdefault(...)` so the
+    child inherits it "conveniently" - which is exactly what child_env then has
+    to undo, and the two would fight silently.
     """
     import os
 
-    run("do", "t", "--openrouter-key", FAKE_KEY)
+    result = run("ui", "--openrouter-key", FAKE_KEY)
 
-    assert "OPENROUTER_API_KEY" not in os.environ
+    assert stopped_at_link(result)
+    assert not any(key_leaked(v) for v in os.environ.values()), (
+        "the CLI wrote the key into its own environment")
 
 
 # --------------------------------------------------------------------------
-# options: name, type, and the value that actually arrives
+# the options
 # --------------------------------------------------------------------------
 
-def test_every_option_reaches_drive_with_the_right_name_and_type(drive):
-    """One invocation setting everything, compared against an exact dict.
+def test_every_option_reaches_the_link_with_the_right_name_and_type(link):
+    """Each flag arrives under the name the rest of the code reads, and typed.
 
-    Known-bad this catches: --profile-dir arriving as "profileDir", --seed
-    arriving as the string "4242", or --headed arriving as None instead of a
-    bool. None of those raise anything anywhere; they just quietly stop working
-    once the value reaches runner.child_env, which reads by key.
+    `--seed` is the one worth typing: click is told `type=int`, and a string
+    "4242" would travel all the way to the engine and change nothing there,
+    because the value it compares against is a number.
     """
     result = run(
-        "do", "read the page",
+        "ui",
         "--openrouter-key", FAKE_KEY,
-        "--model", "openai/gpt-4o-mini",
-        "--proxy", "http://user:pw@host:8080",
+        "--proxy", "socks5://proxy.example.com:1080",
         "--seed", "4242",
         "--headed",
-        "--binary", "C:/ff/firefox.exe",
-        "--profile-dir", "C:/tmp/aihawk-profile",
+        "--binary", "C:/x/firefox.exe",
+        "--profile-dir", "C:/profiles/one",
     )
 
-    assert result.exit_code == 0, result.output
-    call = drive.call
-    assert call["task"] == "read the page"
-    assert call["model"] == "openai/gpt-4o-mini"
-    assert call["opts"] == {
-        "proxy": "http://user:pw@host:8080",
-        "seed": 4242,
-        "headed": True,
-        "binary": "C:/ff/firefox.exe",
-        "profile_dir": "C:/tmp/aihawk-profile",
-    }
-    seed = call["opts"]["seed"]
-    assert isinstance(seed, int) and not isinstance(seed, bool)
-    assert isinstance(call["opts"]["headed"], bool)
+    assert stopped_at_link(result)
+    opts = link.call["opts"]
+    assert opts["proxy"] == "socks5://proxy.example.com:1080"
+    assert opts["seed"] == 4242 and isinstance(opts["seed"], int)
+    assert opts["headed"] is True
+    assert opts["binary"] == "C:/x/firefox.exe"
+    assert opts["profile_dir"] == "C:/profiles/one"
 
 
-def test_defaults_are_none_headless_and_the_default_model(drive):
-    """A bare `aihawk do TASK` with a key and nothing else.
+def test_defaults_are_none_headless_and_the_placeholder(link):
+    """With nothing passed, nothing is invented.
 
-    Known-bad: a default of "" instead of None for --proxy, which child_env
-    treats as falsy today but which any later `if "proxy" in opts` would treat as
-    a configured proxy.
+    ⛔ `--proxy` in particular must default to None and not to "": an empty
+    string is a value, and STEALTHFOX_PROXY set to it is not the same as no
+    proxy at all.
     """
-    result = run("do", "t", "--openrouter-key", FAKE_KEY)
+    result = run("ui")
 
-    assert result.exit_code == 0, result.output
-    assert drive.call["opts"] == {
-        "proxy": None,
-        "seed": None,
-        "headed": False,
-        "binary": None,
-        "profile_dir": None,
-    }
-    assert drive.call["model"] == DEFAULT_MODEL
+    assert stopped_at_link(result)
+    opts = link.call["opts"]
+    assert opts["proxy"] is None
+    assert opts["seed"] is None
+    assert opts["headed"] is False
+    assert opts["binary"] is None
+    assert opts["profile_dir"] is None
+    assert link.call["key"] is None
 
 
-def test_the_option_names_are_the_ones_the_runner_reads(drive):
+def test_the_model_default_is_named_and_used(link, monkeypatch):
+    monkeypatch.setenv("OPENROUTER_API_KEY", FAKE_KEY)
+
+    result = run("ui")
+
+    assert stopped_at_link(result)
+    assert DEFAULT_MODEL in result.output
+    assert BASE_URL in result.output
+
+
+def test_the_option_names_are_the_ones_the_runner_reads(link):
     """Cross-module: the dict the CLI builds is fed to the real child_env.
 
-    This is the trap for the rename described above, asserted end to end rather
-    than described. child_env reads opts by key with .get(), so a renamed key
-    produces no error at all: the browser simply launches with no proxy, no seed
-    and no profile. Here every option must come out as its STEALTHFOX_ variable,
-    and the API key must not come out at all.
+    Two modules agreeing on a spelling is not something either can check alone.
+    `child_env` reads opts by key with `.get()`, so a renamed key is not an
+    error anywhere - the option simply stops having an effect.
     """
-    run(
-        "do", "t",
-        "--openrouter-key", FAKE_KEY,
-        "--proxy", "http://host:8080",
+    result = run(
+        "ui",
+        "--proxy", "http://user:pass@proxy.example.com:8080",
         "--seed", "7",
         "--headed",
-        "--binary", "C:/ff/firefox.exe",
-        "--profile-dir", "C:/tmp/prof",
+        "--binary", "C:/x/firefox.exe",
+        "--profile-dir", "C:/profiles/two",
     )
 
-    env = child_env(drive.call["opts"], {"OPENROUTER_API_KEY": FAKE_KEY})
-
-    assert env["STEALTHFOX_PROXY"] == "http://host:8080"
+    assert stopped_at_link(result)
+    env = child_env(link.call["opts"], {"OPENROUTER_API_KEY": FAKE_KEY})
+    assert env["STEALTHFOX_PROXY"] == "http://user:pass@proxy.example.com:8080"
     assert env["STEALTHFOX_SEED"] == "7"
     assert env["STEALTHFOX_HEADLESS"] == "0"
-    assert env["STEALTHFOX_BINARY"] == "C:/ff/firefox.exe"
-    assert env["STEALTHFOX_PROFILE_DIR"] == "C:/tmp/prof"
-    assert "OPENROUTER_API_KEY" not in env
-    assert not key_leaked(repr(env))
+    assert env["STEALTHFOX_BINARY"] == "C:/x/firefox.exe"
+    assert env["STEALTHFOX_PROFILE_DIR"] == "C:/profiles/two"
 
 
-def test_without_headed_the_child_is_left_headless(drive):
-    """Omitting --headed must leave STEALTHFOX_HEADLESS unset.
+def test_without_headed_the_child_is_left_headless(link):
+    """The variable is written only to turn headless OFF, so its ABSENCE is the
+    headless case. Writing "1" would be equally correct and is not what the
+    engine reads."""
+    result = run("ui")
 
-    Known-bad: is_flag defaulting to True, or the CLI writing "1"/"0" for both
-    cases, either of which would open a visible browser on a machine where that
-    is a measurement hazard.
-    """
-    run("do", "t", "--openrouter-key", FAKE_KEY)
-
-    assert "STEALTHFOX_HEADLESS" not in child_env(drive.call["opts"], {})
+    assert stopped_at_link(result)
+    assert "STEALTHFOX_HEADLESS" not in child_env(link.call["opts"], {})
 
 
-def test_a_non_numeric_seed_is_a_usage_error(drive):
-    """--seed abc is rejected by click before anything is launched.
+def test_the_host_and_port_have_loopback_defaults(link):
+    """The interface has no authentication, so the default must not expose it."""
+    rendered = run("ui", "--help").output
+    assert "127.0.0.1" in rendered
+    assert "8765" in rendered
 
-    Exit code 2 is the assertion: 1 would mean our own code accepted the string
-    and failed later, 0 would mean it accepted it outright and the fingerprint
-    seed silently became a string.
-    """
-    result = run("do", "t", "--openrouter-key", FAKE_KEY, "--seed", "abc")
+
+def test_a_non_numeric_seed_is_a_usage_error(link):
+    """Click rejects it before anything runs: exit 2, and no Link at all."""
+    result = run("ui", "--openrouter-key", FAKE_KEY, "--seed", "abc")
 
     assert result.exit_code == 2, result.output
-    assert "--seed" in result.output
-    assert drive.calls == []
+    assert link.calls == [], "the command connected despite a bad option"
 
 
-def test_the_task_argument_is_required(drive):
-    """`aihawk do` with no task is a usage error naming the argument.
-
-    Known-bad: a default of "" for TASK, which would send an empty task to the
-    model and spend a browser launch and tokens on nothing.
-    """
-    result = run("do")
+def test_an_unknown_option_is_a_usage_error(link):
+    result = run("ui", "--openrouter-key", FAKE_KEY, "--nope")
 
     assert result.exit_code == 2, result.output
-    assert "TASK" in result.output
-    assert drive.calls == []
+    assert link.calls == []
 
 
-def test_an_unknown_option_is_a_usage_error(drive):
-    """A typo must stop the run, not be forwarded as part of the task."""
-    result = run("do", "t", "--openrouter-key", FAKE_KEY, "--headless")
+def test_the_link_is_opened_exactly_once(link):
+    """One invocation, one browser. A retry loop around the connection would
+    launch two and leave one behind."""
+    run("ui", "--openrouter-key", FAKE_KEY)
 
-    assert result.exit_code == 2, result.output
-    assert drive.calls == []
-
-
-def test_the_task_reaches_drive_verbatim(drive):
-    """Quotes, inner spaces and newlines survive the command line unchanged.
-
-    Known-bad: a nargs=-1 variadic argument joined with " ", which collapses
-    runs of whitespace and drops newlines from a multi-line task.
-    """
-    task = 'click the "Sign in" button,   then read\nthe first heading'
-
-    run("do", task, "--openrouter-key", FAKE_KEY)
-
-    assert drive.call["task"] == task
-
-
-def test_drive_is_called_exactly_once(drive):
-    """One command, one browser session.
-
-    Known-bad: a retry wrapper around drive, which on this stack means a second
-    Firefox process for every failure.
-    """
-    run("do", "t", "--openrouter-key", FAKE_KEY)
-
-    assert len(drive.calls) == 1
-
-
-# --------------------------------------------------------------------------
-# what lands on stdout
-# --------------------------------------------------------------------------
-
-def test_the_result_is_printed_verbatim_with_one_trailing_newline(monkeypatch):
-    """stdout is exactly the model's answer plus the newline click.echo adds.
-
-    Known-bad: a decorative prefix such as "Result: ", or repr() instead of the
-    string, either of which breaks `aihawk do ... > answer.txt` and every
-    pipeline reading the answer.
-    """
-    answer = "line one\nline two with trailing spaces   "
-    monkeypatch.setattr(climod, "drive", DriveRecorder(result=answer))
-
-    result = run("do", "t", "--openrouter-key", FAKE_KEY)
-
-    assert result.exit_code == 0, result.output
-    assert result.stdout == answer + "\n"
-    assert result.stderr == ""
-
-
-def test_an_empty_result_prints_only_a_newline(monkeypatch):
-    """The model answering with nothing is not an error and prints nothing.
-
-    Known-bad: printing "None" because the empty string was passed through a
-    str() of a None default.
-    """
-    monkeypatch.setattr(climod, "drive", DriveRecorder(result=""))
-
-    result = run("do", "t", "--openrouter-key", FAKE_KEY)
-
-    assert result.exit_code == 0, result.output
-    assert result.stdout == "\n"
+    assert len(link.calls) == 1
 
 
 # --------------------------------------------------------------------------
@@ -388,130 +318,96 @@ def test_an_empty_result_prints_only_a_newline(monkeypatch):
 # --------------------------------------------------------------------------
 
 def test_group_help_works_and_names_openrouter():
-    """`aihawk --help` must tell a first-time user which credential is needed.
-
-    OpenRouter is the only accepted provider, so the top-level help is where a
-    person finds out that a key is required at all. Known-bad, and the reason
-    this assertion exists: help text that describes the browser and never
-    mentions the key, which sends the user to the error path to discover it.
-    """
     result = run("--help")
 
     assert result.exit_code == 0, result.output
-    assert "do" in result.output
-    assert "openrouter" in result.output.lower()
+    assert "OpenRouter" in result.output
 
 
-def test_do_help_works_and_names_openrouter_and_the_env_variables():
-    """`aihawk do --help` documents both ways to supply the key.
-
-    Known-bad: dropping "(or env OPENROUTER_API_KEY)" from the option help,
-    which leaves the environment route undiscoverable.
-    """
-    result = run("do", "--help")
+def test_ui_help_names_openrouter_and_the_environment_variables():
+    """The help has to say where a key can come from other than the flag."""
+    result = run("ui", "--help")
 
     assert result.exit_code == 0, result.output
-    assert "openrouter" in result.output.lower()
-    assert "OPENROUTER_API_KEY" in result.output
-    assert "AIHAWK_MODEL" in result.output
-    for option in DECLARED_OPTIONS | {"--help"}:
-        assert option in result.output, option
+    for wanted in ("OPENROUTER_API_KEY", "AIHAWK_MODEL"):
+        assert wanted in result.output, "the help never names %s" % wanted
+    for option in DECLARED_OPTIONS:
+        assert option in result.output, "the help never names %s" % option
 
 
-def test_bare_invocation_shows_the_do_command():
-    """`aihawk` alone is a usage error that still lists what can be run."""
+def test_bare_invocation_shows_the_ui_command():
+    """`aihawk` with no arguments lists what it can do rather than failing."""
     result = run()
 
-    assert result.exit_code == 2
-    assert "do" in result.output
+    assert "ui" in result.output
 
 
 # --------------------------------------------------------------------------
 # the key must never be echoed - the point of this file
 # --------------------------------------------------------------------------
 
-def test_the_key_is_never_echoed_on_any_path(monkeypatch):
-    """A sweep of every CLI path, with the key present in argv or in the shell.
+def test_the_key_is_never_echoed_on_any_path(monkeypatch, link):
+    """Success, failure, usage error, crash: none of them may print the key.
 
-    Success, help, the missing-key refusal, a usage error, and a crash inside
-    drive. On each one the whole output is searched for a recognisable piece of
-    the key. Known-bad this catches: a debug print of the resolved key, a click
-    exception message interpolating it, or an error path that echoes argv.
-
-    The crash case also searches the formatted traceback, because a traceback is
-    what a user pastes into an issue: a RuntimeError message built with an
-    f-string containing the key would end up in a public bug report.
+    The crash path is the one that matters. An exception carrying the key in
+    its message, or a traceback with the call arguments in a frame, puts it in
+    a log that outlives the terminal.
     """
-    outputs: dict[str, str] = {}
+    outputs = {}
 
-    monkeypatch.setattr(climod, "drive", DriveRecorder(result="the heading is hello"))
-    outputs["success"] = run("do", "t", "--openrouter-key", FAKE_KEY).output
-    outputs["group_help"] = run("--help").output
-    outputs["do_help"] = run("do", "--help").output
-    outputs["missing_task"] = run("do", "--openrouter-key", FAKE_KEY).output
+    outputs["stopped_at_link"] = run("ui", "--openrouter-key", FAKE_KEY).output
+    outputs["ui_help"] = run("ui", "--help").output
     outputs["unknown_option"] = run(
-        "do", "t", "--openrouter-key", FAKE_KEY, "--nope"
-    ).output
+        "ui", "--openrouter-key", FAKE_KEY, "--nope").output
 
     monkeypatch.setenv("OPENROUTER_API_KEY", FAKE_KEY)
-    outputs["success_from_env"] = run("do", "t").output
-    outputs["help_with_key_in_env"] = run("do", "--help").output
+    outputs["from_env"] = run("ui").output
+    outputs["help_with_key_in_env"] = run("ui", "--help").output
     monkeypatch.delenv("OPENROUTER_API_KEY")
 
-    # The refusal path: no key exists, but the marker must not appear either.
-    outputs["missing_key"] = run("do", "t").output
+    def explode(*a, **k):
+        raise RuntimeError("the browser did not start")
 
-    crash = DriveRecorder(raises=RuntimeError("the browser did not start"))
-    monkeypatch.setattr(climod, "drive", crash)
-    crashed = run("do", "t", "--openrouter-key", FAKE_KEY)
+    monkeypatch.setattr(link_mod, "Link", explode)
+    crashed = run("ui", "--openrouter-key", FAKE_KEY)
     outputs["crash"] = crashed.output
     if crashed.exception is not None:
-        outputs["crash_traceback"] = "".join(
+        outputs["traceback"] = "".join(
             traceback.format_exception(
                 type(crashed.exception), crashed.exception,
-                crashed.exception.__traceback__,
-            )
-        )
+                crashed.exception.__traceback__))
 
-    leaks = sorted(name for name, text in outputs.items() if key_leaked(text))
-    assert leaks == [], f"the API key appeared in the output of: {leaks}"
+    leaked = {name: text for name, text in outputs.items() if key_leaked(text)}
+    assert not leaked, "the key reached the output on: %s" % sorted(leaked)
 
 
-def test_the_key_detector_is_not_vacuous(monkeypatch):
-    """Control for the sweep above: prove key_leaked can see a real leak.
+def test_the_key_detector_is_not_vacuous(monkeypatch, link):
+    """The test above is worth nothing if key_leaked can never fire.
 
-    A check that has only ever returned False is not a check. Here drive returns
-    a string containing the key, the CLI prints its result verbatim as it must,
-    and the detector has to fire. If this test ever fails, the sweep above is
-    asserting nothing and its green means nothing.
+    Known-bad on purpose: a command that echoes the key it was given. If this
+    does not catch it, the assertion above is decoration.
     """
-    monkeypatch.setattr(
-        climod, "drive", DriveRecorder(result=f"debug: using key {FAKE_KEY}")
-    )
+    assert key_leaked("prefix " + FAKE_KEY + " suffix")
+    assert key_leaked("sk-or-v1-CANARY")
+    assert not key_leaked("nothing to see here")
 
-    result = run("do", "t", "--openrouter-key", FAKE_KEY)
+    @climod.main.command()
+    @click.option("--openrouter-key", default=None)
+    def leaky(openrouter_key):  # pragma: no cover - registered then removed
+        click.echo("key is %s" % openrouter_key)
 
-    assert key_leaked(result.output)
-    assert key_leaked(FAKE_KEY[:20]), "a truncated echo must trip the detector too"
-    assert not key_leaked("no secret here")
+    try:
+        out = run("leaky", "--openrouter-key", FAKE_KEY).output
+        assert key_leaked(out), "the detector cannot see a real leak"
+    finally:
+        climod.main.commands.pop("leaky", None)
 
 
 def test_the_key_option_cannot_echo_its_own_value_in_a_usage_error():
-    """Structural guard on --openrouter-key: plain text, no type, no callback.
-
-    Measured on click 8.5.0: a click type or callback that rejects a value
-    prints that value back. `aihawk do t --seed <key>` (a plausible typo, the
-    key landing on the wrong flag) prints the key in full on stderr. That echo
-    belongs to click, but it becomes ours the moment --openrouter-key gains a
-    type= or a callback raising BadParameter, since the rejected value would
-    then be the key itself. Known-bad: adding type=click.STRING with a callback
-    validating the "sk-or-" prefix, which sounds helpful and prints the key on
-    every mistyped key.
-    """
-    param = next(p for p in climod.do.params if p.name == "openrouter_key")
-
-    assert param.type is click.STRING
-    assert param.callback is None
-    assert param.default is None
-    assert not getattr(param, "is_flag", False)
-    assert FAKE_KEY not in (param.help or "")
+    """Click prints the offending value for some errors. The key option must
+    never be the one that trips it, so it is a plain string with no type,
+    no choice list and no callback that could reject and quote it."""
+    param = next(p for p in climod.main.commands["ui"].params
+                 if "--openrouter-key" in p.opts)
+    assert param.type.name == "text", (
+        "a typed --openrouter-key can have its value quoted back by click")

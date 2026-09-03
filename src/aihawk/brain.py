@@ -85,7 +85,7 @@ class LiteralBrain(Brain):
 class OpenRouterBrain(Brain):
     """The product: the shared loop, narrating each step as it takes it.
 
-    The loop itself is `agent.Conversation`, the same one `aihawk do` runs. This
+    The loop itself is `agent.Conversation`. This
     class supplies the two things that differ: a transcript that survives an
     instruction, so the follow-up box means something, and a narrator, so the
     work is visible while it happens rather than only when it ends.

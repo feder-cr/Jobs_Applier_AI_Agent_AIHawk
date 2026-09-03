@@ -372,15 +372,20 @@ class _FakeSession:
         return None
 
 
-async def test_drive_hands_the_child_the_scrubbed_environment(monkeypatch):
-    """No browser and no child process: the transport, the OpenAI client and the
-    agent loop are all replaced, and only the StdioServerParameters are read.
+async def test_the_link_hands_the_child_the_scrubbed_environment(monkeypatch):
+    """No browser and no child process: the transport and the session are
+    replaced, and only the StdioServerParameters are read.
 
     This is the test that fails if somebody bypasses the helper. Known-bad:
-    `env=dict(os.environ)` in drive, or dropping the `env=` argument, both of
-    which leave every child_env test above green while the key ships to the
+    `env=dict(os.environ)` in `Link.open`, or dropping the `env=` argument, both
+    of which leave every child_env test above green while the key ships to the
     child (the first) or every STEALTHFOX_* option silently stops working (the
     second).
+
+    ⛔ It used to run through `runner.drive`, behind the `aihawk do` subcommand
+    removed on 2026-09-03. `drive` was only ever a Link opened and closed around
+    one task, so the guarantee never belonged to it: it belongs to `Link`, which
+    is what the interface uses, and that is where it is asserted now.
     """
     monkeypatch.setenv(KEY_NAME, KEY)
     captured = {}
@@ -390,42 +395,36 @@ async def test_drive_hands_the_child_the_scrubbed_environment(monkeypatch):
         captured["params"] = params
         yield ("read", "write")
 
-    # Patched in `link`, not in `runner`: spawning moved there so that one place
+    # Patched in `link`, not in `runner`: spawning lives there so that one place
     # knows the command, the arguments and the child environment. A test that
-    # still reached into `runner` for it would be asserting against a module that
-    # no longer makes the decision.
+    # reached into `runner` for it would be asserting against a module that does
+    # not make the decision.
     monkeypatch.setattr(link_mod, "stdio_client", fake_stdio_client)
     monkeypatch.setattr(link_mod, "ClientSession", _FakeSession)
-    monkeypatch.setattr(agent_mod, "Conversation", _conversation_returning(captured))
-    monkeypatch.setattr(llm_mod, "make_client", lambda key: ("client-for", key))
 
-    out = await runner.drive(
-        "read the page",
-        opts={"proxy": "http://h:1", "seed": 5},
-        key=KEY,
-        model="z-ai/glm-4.6",
-    )
+    link = await link_mod.Link({"proxy": "http://h:1", "seed": 5}, key=KEY).open()
+    try:
+        params = captured["params"]
+        assert params.command == sys.executable
+        assert params.args == ["-m", "invisible_playwright_mcp"]
 
-    assert out == "FINAL"
-    params = captured["params"]
-    assert params.command == sys.executable
-    assert params.args == ["-m", "invisible_playwright_mcp"]
-
-    child = params.env
-    assert child is not None, "an explicit environment is what carries the options"
-    assert KEY_NAME not in child
-    assert values_carrying(child, KEY) == []
-    assert child["STEALTHFOX_PROXY"] == "http://h:1"
-    assert child["STEALTHFOX_SEED"] == "5"
-    assert os.environ[KEY_NAME] == KEY, "the parent keeps its own key"
+        child = params.env
+        assert child is not None, "an explicit environment is what carries the options"
+        assert KEY_NAME not in child
+        assert values_carrying(child, KEY) == []
+        assert child["STEALTHFOX_PROXY"] == "http://h:1"
+        assert child["STEALTHFOX_SEED"] == "5"
+        assert os.environ[KEY_NAME] == KEY, "the parent keeps its own key"
+    finally:
+        await link.close()
 
 
-async def test_drive_keeps_the_key_in_the_parent_client_only(monkeypatch):
-    """The key must reach the OpenAI-compatible client and nothing else.
+async def test_the_child_never_gets_the_key_even_when_the_parent_holds_it(monkeypatch):
+    """The other half, at the boundary that still exists.
 
     Known-bad: passing the key into the child to let the server call the model
-    itself, which would make every assertion above pointless while drive still
-    returned the right answer.
+    itself, which would make every assertion above pointless while the interface
+    still answered correctly.
     """
     monkeypatch.setenv(KEY_NAME, KEY)
     seen = {}
@@ -437,10 +436,38 @@ async def test_drive_keeps_the_key_in_the_parent_client_only(monkeypatch):
 
     monkeypatch.setattr(link_mod, "stdio_client", fake_stdio_client)
     monkeypatch.setattr(link_mod, "ClientSession", _FakeSession)
-    monkeypatch.setattr(agent_mod, "Conversation", _conversation_returning(seen))
-    monkeypatch.setattr(llm_mod, "make_client", lambda key: {"api_key": key})
 
-    await runner.drive("t", opts={}, key=KEY, model="m")
+    link = await link_mod.Link({}, key=KEY).open()
+    try:
+        assert values_carrying(seen["env"], KEY) == [], "the child must not have it"
+    finally:
+        await link.close()
 
-    assert seen["client"] == {"api_key": KEY}, "the parent client must get the key"
-    assert values_carrying(seen["env"], KEY) == [], "the child must not"
+
+def test_the_parent_client_is_the_one_that_gets_the_key(monkeypatch):
+    """And it has to reach SOMETHING, or the interface has no model.
+
+    The pairing matters: a version that scrubs the key everywhere passes the two
+    tests above and cannot talk to OpenRouter at all. This drives the real
+    command, because `cli.ui` is what builds the client now.
+    """
+    from click.testing import CliRunner
+
+    import aihawk.cli as climod
+
+    seen = {}
+    monkeypatch.setenv(KEY_NAME, KEY)
+    monkeypatch.setattr(llm_mod, "make_client",
+                        lambda key: seen.setdefault("client", {"api_key": key}))
+
+    class _Stop(Exception):
+        pass
+
+    def stop(*a, **k):
+        raise _Stop
+
+    monkeypatch.setattr(link_mod, "Link", stop)
+    CliRunner().invoke(climod.main, ["ui"])
+
+    assert seen.get("client") == {"api_key": KEY}, (
+        "the parent client never got the key, so nothing can call the model")

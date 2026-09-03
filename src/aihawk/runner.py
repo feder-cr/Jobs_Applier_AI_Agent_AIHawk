@@ -9,7 +9,8 @@ hand it over.
 Spawning is `Link`'s. This module used to build its own StdioServerParameters as
 well, which meant two places knew the command, the arguments and the environment
 of the child - and a change to how the server is launched had to be made twice
-or be wrong once.
+or be wrong once. It also held `drive`, the one-task-then-close half of an
+`aihawk do` subcommand, removed on 2026-09-03 along with it.
 """
 from __future__ import annotations
 
@@ -76,22 +77,3 @@ def child_env(opts: Mapping[str, Any], base_env: Mapping[str, str],
     if opts.get("profile_dir"):
         env["STEALTHFOX_PROFILE_DIR"] = str(opts["profile_dir"])
     return env
-
-
-async def drive(task: str, *, opts: Mapping[str, Any], key: str, model: str) -> str:
-    """One instruction, one answer, browser closed after. What `aihawk do` runs.
-
-    The same Link the interface holds open for a session, opened and closed
-    around a single task. The difference between the two commands is how long the
-    connection lives, and nothing else.
-    """
-    from .agent import Conversation
-    from .link import Link
-    from .llm import make_client
-
-    link = await Link(opts, key=key).open()
-    try:
-        convo = Conversation(make_client(key), model)
-        return await convo.run(task, link.call, link.tools)
-    finally:
-        await link.close()
