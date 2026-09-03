@@ -86,7 +86,7 @@ never be blocked is describing a world with no defenders in it. AIHawk's
 position on this axis is a hardened, real-fingerprint browser plus documented
 limits, not a guarantee. The sorting of blame - and what to actually do -
 is [why an agent gets blocked](why-does-my-ai-agent-get-blocked.md), and
-[the timing signal specific to agents](https://github.com/feder-cr/invisible_playwright/wiki/ai-agent-timing-signal)
+[the timing signal specific to agents](ai-agent-timing-signal.md)
 is worth reading before blaming any browser.
 
 Also on this axis: whether you should be automating the site at all. Terms of

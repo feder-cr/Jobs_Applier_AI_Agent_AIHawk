@@ -104,7 +104,7 @@ by design rather than a defect.
 reference container is a recognizable environment:
 [a headless server machine answers a page's questions differently from a
 desktop](https://github.com/feder-cr/invisible_playwright/wiki/headless-browser-agent-on-a-server),
-and [an agent's pacing is its own signal](https://github.com/feder-cr/invisible_playwright/wiki/ai-agent-timing-signal).
+and [an agent's pacing is its own signal](ai-agent-timing-signal.md).
 With computer use you at least own the environment and can improve it; with a
 hosted product you could not.
 
