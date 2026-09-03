@@ -138,7 +138,7 @@ The reading room around the agent lives in the
 [AI browser-agent landscape and its comparisons](https://github.com/feder-cr/AIHawk/wiki/guides-alternatives-and-comparisons),
 [what to check when an agent gets blocked](https://github.com/feder-cr/AIHawk/wiki/why-does-my-ai-agent-get-blocked),
 and [what happened to OpenAI Operator](https://github.com/feder-cr/AIHawk/wiki/is-openai-operator-still-available),
-among others. Worked examples with recordings live in
+among others. Worked examples, transcripts and their outputs live in
 [articles/](https://github.com/feder-cr/AIHawk/tree/main/articles).
 
 ## The rest of the family

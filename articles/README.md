@@ -1,15 +1,18 @@
 # Articles
 
-Guides on using AIHawk, with worked examples and recordings. Empty for now.
+Guides on using AIHawk, with worked examples.
+
+- [Extracting a category to CSV](extracting-a-category-to-csv/) - a 32-book
+  category over two pages, driven over MCP, with the wrong turn left in.
 
 One article per folder, so the piece and the things it references travel
 together:
 
 ```
-src/article/
-  extracting-a-listing-to-csv/
+articles/
+  extracting-a-category-to-csv/
     README.md
-    demo.mp4
+    mystery-books.csv
     screenshots/
 ```
 
@@ -20,8 +23,11 @@ paraphrase of what it would do. If the run took four tries to get right, the
 article is more useful with the four tries in it than with a clean one that
 never happened.
 
-**A recording of the run, not a diagram of it.** The thing worth showing is the
-browser doing the work while the transcript narrates.
+**The run's own visual record, not a diagram of it.** The thing worth showing
+is the browser doing the work while the transcript narrates. For a headed run
+that means a recording; for a headless MCP run, where there is no window to
+point a recorder at, it means the screenshots the browser itself returned
+during the run - actual captures from the session, never staged afterwards.
 
 **The version it was recorded against.** These pieces go stale: the tool names
 and the shape of the responses change between releases, and a reader who cannot
