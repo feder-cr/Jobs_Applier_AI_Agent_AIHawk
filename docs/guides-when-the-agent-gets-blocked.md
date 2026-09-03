@@ -23,4 +23,3 @@ check, in what order.
 - [Agent retry loops trip rate limits, not fingerprints](agent-retry-loops-rate-limits.md)
 - [Claude computer use detected as a bot](claude-computer-use-detected-as-bot.md)
 - [browser-use getting blocked: what you can and cannot change](browser-use-getting-blocked.md)
-- [How LinkedIn detects bots, at the level you can reason about](linkedin-bot-detection.md)

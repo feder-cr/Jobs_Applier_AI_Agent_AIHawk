@@ -140,7 +140,6 @@ The reading room around the agent lives in the
 [wiki](https://github.com/feder-cr/AIHawk/wiki): the
 [AI browser-agent landscape and its comparisons](https://github.com/feder-cr/AIHawk/wiki/guides-alternatives-and-comparisons),
 [what to check when an agent gets blocked](https://github.com/feder-cr/AIHawk/wiki/why-does-my-ai-agent-get-blocked),
-[the job-application automation this project grew out of](https://github.com/feder-cr/AIHawk/wiki/guides-job-application-automation),
 and [what happened to OpenAI Operator](https://github.com/feder-cr/AIHawk/wiki/is-openai-operator-still-available),
 among others. Worked examples with recordings live in
 [articles/](https://github.com/feder-cr/AIHawk/tree/main/articles).
