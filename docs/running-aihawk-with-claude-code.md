@@ -31,10 +31,10 @@ engine build for it was `firefox-20` - and [uv](https://docs.astral.sh/uv/),
 because the command runs the server with `uvx`. Then, once:
 
 ```bash
-claude mcp add -s user stealth -- uvx invisible-playwright-mcp
+claude mcp add --scope user stealth -- uvx invisible-playwright-mcp
 ```
 
-Reading it left to right: `-s user` registers the server at user scope, so it
+Reading it left to right: `--scope user` registers the server at user scope, so it
 is available in every project rather than only the directory you happened to be
 in; `stealth` is the name it appears under; everything after `--` is the
 command Claude Code will run to start the server, and `uvx` fetches and runs
@@ -128,7 +128,7 @@ results, and short steps keep its context small and its mistakes cheap.
 ## Short answers to the questions that lead here
 
 **How do I add AIHawk's browser to Claude Code?**
-`claude mcp add -s user stealth -- uvx invisible-playwright-mcp`, once, with uv
+`claude mcp add --scope user stealth -- uvx invisible-playwright-mcp`, once, with uv
 installed. New sessions then have the browser tools in `/mcp`.
 
 **Do I need an OpenRouter key for this?** No. The key is only for AIHawk's own
