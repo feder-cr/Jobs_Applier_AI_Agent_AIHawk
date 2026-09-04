@@ -36,8 +36,18 @@ dependencies = [
     # Set only after 0.10.0 is on the index, never before: a floor no published
     # version satisfies is a package nobody can install. publish.yml refuses
     # the release rather than trusting this comment to be read.
-    "invisible-playwright-mcp>=0.10.0",
+    # ⛔ 0.11.0, not 0.10.0, and the floor is what makes the pairing true.
+    # The VERB table below names session_start and session_status, and a
+    # table naming tools the server does not offer is exactly what
+    # test_the_table_names_no_tool_that_does_not_exist refuses. CI resolves
+    # this from the INDEX, not from a checkout, so the floor is the only
+    # thing that can say which server this interface goes with.
+    "invisible-playwright-mcp>=0.11.0",
     "mcp>=1.2",
+    # Declared rather than inherited. It arrives transitively through mcp today,
+    # and a transitive dependency is one somebody else can drop in a minor
+    # release without telling us.
+    "python-dotenv>=1",
     "openai>=1.30",
     "click>=8.1",
     # Declared even though `mcp` already pulls both in for streamable-http. This

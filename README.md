@@ -127,8 +127,25 @@ quicker, because a page can tell the difference.
 - **`--host`, `--port`** `127.0.0.1` and `8765`. Changing the host
   exposes an interface that has no authentication.
 
+### A `.env` beside the command
+
+Rather than retyping the key and the binary path, put them in a `.env` in the
+directory you run from:
+
+```
+OPENROUTER_API_KEY=sk-or-...
+STEALTHFOX_BINARY=/path/to/firefox
+```
+
+It is read at startup, and on the way in it **never overrides** something
+already set, so the order is `--flag` > the environment > `.env` > the default.
+Only the directory you are in is read - there is no search upwards, so running
+from a subfolder cannot silently pick up a different key. The startup line names
+the variables it applied and never prints their values.
+
 Passing `--openrouter-key` puts the key in your shell history, and on Linux in
-the process list. `OPENROUTER_API_KEY` in the environment avoids both.
+the process list. `OPENROUTER_API_KEY` in the environment or in a `.env` avoids
+both.
 
 Either way it does not reach the browser process: it is removed from the
 environment the engine starts with, by name and by value, so a copy under a
