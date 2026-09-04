@@ -68,6 +68,13 @@ aihawk = "aihawk.cli:main"
 packages = ["src/aihawk"]
 
 [tool.pytest.ini_options]
+# ⛔ SO A CHECKOUT GATES ITSELF. Without this, pytest imports whatever the
+# interpreter's installation points at, which is not necessarily this tree:
+# measured 2026-08-29 on a sibling package, an editable install resolved to a
+# SECOND working copy of the same repository on an older branch, so a fix just
+# written did not move the test exercising it. Resolved against this
+# pyproject.toml, so every checkout points at itself.
+pythonpath = ["src"]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 # `ui` tests launch a real browser through a real MCP server. They are slow,
