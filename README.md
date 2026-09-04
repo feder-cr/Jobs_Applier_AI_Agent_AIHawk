@@ -5,7 +5,7 @@
   <img alt="AIHawk" src="https://raw.githubusercontent.com/feder-cr/AIHawk/main/assets/aihawk-logo-light.png" width="380">
 </picture>
 
-**AIHawk is an AI agent with a real browser. You say what you want in plain language, and it goes and does it on the actual web.**
+**AIHawk is an open-source AI browser agent: an AI agent with a real browser. You say what you want in plain language, and it autonomously browses, clicks, types and reads the actual web to get it done.**
 
 <sub>FEATURED IN</sub><br>
 [**Business Insider**](https://www.businessinsider.com/aihawk-applies-jobs-for-you-linkedin-risks-inaccuracies-mistakes-2024-11) ·
