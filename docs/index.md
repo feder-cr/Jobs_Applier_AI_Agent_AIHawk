@@ -5,7 +5,7 @@ nav_order: 1
 
 # AIHawk Wiki
 
-AIHawk is an open-source AI browser agent: an autonomous web agent with a real browser. You say what you want in plain language, and it browses, clicks, types and reads the actual web to get it done. This wiki is the reading room
+AIHawk is an open-source AI browser agent: a web browsing agent with a real browser. You say what you want in plain language, and it browses, clicks, types and reads the actual web to get it done. This wiki is the reading room
 around it - what an AI web agent is, how the tools in this space compare,
 what to do when an agent gets blocked, and how to put an agent to work.
 
