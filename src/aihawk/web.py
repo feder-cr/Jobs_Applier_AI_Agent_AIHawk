@@ -385,7 +385,9 @@ const VERB = {
   browser_evaluate:['Evaluating','Evaluated'], browser_take_screenshot:['Capturing','Captured'],
   browser_select_option:['Choosing','Chose'],
   session_new_page:['Opening tab','Opened tab'],   session_select_page:['Switching tab','Switched tab'],
-  session_close_page:['Closing tab','Closed tab'], session_list_pages:['Listing tabs','Listed tabs']
+  session_close_page:['Closing tab','Closed tab'], session_list_pages:['Listing tabs','Listed tabs'],
+  session_start:['Starting browser','Started browser'],
+  session_status:['Checking session','Checked session']
 };
 const LEAD = /^(I will |I'll |I am |I'm |Let me |Now I will |Now I'll )/i;
 const LONG = 120;
