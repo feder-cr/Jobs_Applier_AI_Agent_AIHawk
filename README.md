@@ -32,7 +32,7 @@ about how you work.
 **Claude Code:**
 
 ```bash
-claude mcp add -s user stealth -- uvx invisible-playwright-mcp
+claude mcp add --scope user stealth -- uvx invisible-playwright-mcp
 ```
 
 **Codex:**
@@ -44,7 +44,7 @@ codex mcp add stealth -- uvx invisible-playwright-mcp
 **Gemini CLI:**
 
 ```bash
-gemini mcp add -s user stealth uvx invisible-playwright-mcp
+gemini mcp add --scope user stealth uvx invisible-playwright-mcp
 ```
 
 Then ask your assistant, in the window you already have open:
