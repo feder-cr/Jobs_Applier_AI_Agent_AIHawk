@@ -67,3 +67,29 @@ jobs:
           /tmp/clean/bin/pip install dist/*.whl
           /tmp/clean/bin/aihawk --help
           /tmp/clean/bin/python -c "import aihawk.web, aihawk.brain, aihawk.link, aihawk.cli"
+
+  # 2026-09-04: aihawk 0.4.0 went to the index, then main gained two more
+  # changes while pyproject still said 0.4.0. A release from there would have
+  # published NOTHING and reported success, because publish.yml treats a version
+  # already on the index as a deliberate no-op - which is right for a re-pushed
+  # tag and indistinguishable from somebody forgetting to bump.
+  #
+  # Pull requests only: on main straight after a release the version IS the
+  # published one until somebody bumps, and a gate that is red at rest is a gate
+  # people learn to skip. The job sets the variable itself, so it cannot silently
+  # skip the way a local run does.
+  version:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: the version this change proposes is still free
+        env:
+          AIHAWK_CHECK_VERSION: "1"
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+          python -m pytest -q tests/test_version_is_not_taken.py
