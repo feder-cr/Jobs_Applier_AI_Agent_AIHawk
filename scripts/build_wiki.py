@@ -114,7 +114,9 @@ toplevel.sort(key=lambda x: int(x[1].get("nav_order", "999")))
 lines = ["### " + link("index"), ""]
 for slug, fm in toplevel:
     t = title_of(slug)
-    lines.append("**%s**" % t)
+    # The group header is a page too: bold AND a link, so the three hub pages
+    # are reachable from every wiki page instead of being named and unlinked.
+    lines.append("**%s**" % link(slug))
     for cs, cfm in children_of(t):
         if cfm.get("has_children") == "true":
             lines.append("- %s" % link(cs))
