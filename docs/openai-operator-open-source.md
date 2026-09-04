@@ -165,6 +165,8 @@ direction is clear.
 
 **See also:** [OpenAI Operator alternatives](openai-operator-alternatives.md)
 for the hosted options next to these,
+[open-source AI browser agents](ai-browser-agent-open-source.md) for the same
+space compared without the Operator frame,
 [browser-use alternatives](browser-use-alternatives.md) for the leader's
 trade-offs in detail, and
 [Choosing an AI browser agent](best-ai-browser-agent.md) for the decision

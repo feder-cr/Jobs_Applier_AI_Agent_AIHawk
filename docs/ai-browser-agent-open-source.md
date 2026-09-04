@@ -201,8 +201,11 @@ repository page on that date.
 
 **See also:** [open-source computer-use agents](computer-use-agent-open-source.md),
 [what is an AI web agent?](ai-web-agent-explained.md),
-[choosing an AI browser agent](best-ai-browser-agent.md), and
-[browser-use alternatives](browser-use-alternatives.md).
+[choosing an AI browser agent](best-ai-browser-agent.md),
+[browser-use alternatives](browser-use-alternatives.md), and - if you landed
+here from Operator's shutdown -
+[open-source Operator-style agents](openai-operator-open-source.md), which
+frames the overlapping repos by what Operator specifically did.
 
 ---
 
