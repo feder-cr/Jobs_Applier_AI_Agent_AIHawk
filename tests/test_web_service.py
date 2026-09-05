@@ -143,6 +143,38 @@ async def test_the_replay_flag_is_on_history_and_not_on_live_events():
     assert all(e["replay"] for e in replayed)
 
 
+async def test_an_event_after_subscription_is_delivered_once_as_live():
+    """The replay/live boundary is the instant the listener subscribes.
+
+    A StreamingResponse does not start its async generator when the endpoint
+    returns. An event emitted in that gap is already in both history and the
+    listener's queue, so taking the history snapshot inside the generator would
+    send it once as replay and then again as live.
+    """
+    svc = ChatService(FakeLink(), SilentBrain())
+    app = build_app(FakeLink(), svc)
+    route = [r for r in app.routes if r.path == "/chat/events"][0]
+
+    class Req:
+        query_params = {}
+
+    response = await route.endpoint(Req())
+    await svc.emit("said", "only once")
+    body = response.body_iterator
+
+    def payload(chunk):
+        return json.loads(chunk.removeprefix(b"data: ").strip())
+
+    assert payload(await anext(body))["kind"] == "model"
+    delivered = [payload(await anext(body))]
+    try:
+        delivered.append(payload(await asyncio.wait_for(anext(body), 0.1)))
+    except asyncio.TimeoutError:
+        pass
+
+    assert delivered == [{"kind": "said", "text": "only once"}]
+
+
 # --------------------------------------------------------------------------
 # stopping
 # --------------------------------------------------------------------------
