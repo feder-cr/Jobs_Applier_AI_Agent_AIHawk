@@ -138,7 +138,7 @@ hand, the model was the variable.
 read by a human on some cadence, somewhere you already look rather than a new place
 invented just for this.
 
-**See also:** [Monitoring a page for changes with an AI agent](how-to-monitor-a-page-with-an-ai-agent.md),
+**See also:** [running the agent on a local model](ai-browser-agent-local-llm.md) if the token bill is what pushed you here, [Monitoring a page for changes with an AI agent](how-to-monitor-a-page-with-an-ai-agent.md),
 [Browser problem or model problem?](browser-problem-or-model-problem.md), and
 [Which model to use with AIHawk](which-model-to-use-with-aihawk.md).
 

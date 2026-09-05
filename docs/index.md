@@ -77,7 +77,7 @@ Task-shaped guides for putting an AI agent to work on real websites.
 - [Build a lead list with an AI browser agent](ai-agent-lead-list.md)
 - [Move data between two web apps with an AI agent](move-data-between-web-apps-with-an-ai-agent.md)
 - [Run an AI browser agent on a schedule](run-ai-agent-on-a-schedule.md)
-- [Run an AI browser agent with a local LLM](ai-browser-agent-local-llm.md)
+- [AI browser agent with a local LLM: what changes](ai-browser-agent-local-llm.md)
 - [Should you log your AI agent into your accounts?](should-you-log-your-ai-agent-into-accounts.md)
 - [Which model to use with AIHawk](which-model-to-use-with-aihawk.md)
 - [Browser problem or model problem?](browser-problem-or-model-problem.md)
