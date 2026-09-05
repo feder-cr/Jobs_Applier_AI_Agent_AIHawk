@@ -29,8 +29,14 @@ README = pathlib.Path(__file__).resolve().parents[1] / "README.md"
 
 #: The literal command for each path. Literal on purpose: this is what a reader
 #: copies, and a paraphrase in the README is not a way in.
-MCP_WAY = "uvx invisible-playwright-mcp"
-UI_WAY = "uvx aihawk ui"
+#:
+#: These lost their `uvx ` prefix on 2026-09-05, when the page moved to pip as
+#: the route it shows first. Without the prefix they match either phrasing, so
+#: the test measures the offer rather than the tool that happens to launch it,
+#: which is the requirement this file was written for. The uv commands are
+#: still on the page, further down, and still match.
+MCP_WAY = "invisible-playwright-mcp"
+UI_WAY = "aihawk ui"
 
 
 def _sections():

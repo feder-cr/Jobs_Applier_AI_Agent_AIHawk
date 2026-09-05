@@ -20,53 +20,42 @@
 
 ---
 
-## First, install uv
-
-Both ways below start with `uvx`, which comes with
-[uv](https://docs.astral.sh/uv/). One line, once. **Windows**, in PowerShell:
-
-```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
-**Linux:**
-
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-Then **open a new terminal** and run `uv --version`. A number means you are
-ready; anything else, see [setup details](#setup-details).
-
----
-
 ## Two ways to use this browser agent
 
 The only question is where the model comes from. If you already use Claude
-Code, Codex or Gemini CLI, take the first: no new account, your assistant
-already has the model. If you do not, take the second.
+Code, Codex or Gemini CLI, take the first: your assistant has the model
+already and you need no new account. If you do not, take the second.
+
+Either way the only thing you need beforehand is **Python 3.11 or newer**,
+which is where `pip` comes from.
 
 ### 1. From your assistant, over MCP
 
-Your assistant brings the model. You add this browser to it, and nothing changes
-about how you work.
+Your assistant brings the model. You add this browser to it, and nothing
+changes about how you work. Install the browser server:
+
+```bash
+pip install invisible-playwright-mcp
+```
+
+Then tell your assistant it exists.
 
 **Claude Code:**
 
 ```bash
-claude mcp add --scope user stealth -- uvx invisible-playwright-mcp
+claude mcp add --scope user stealth -- invisible-playwright-mcp
 ```
 
 **Codex:**
 
 ```bash
-codex mcp add stealth -- uvx invisible-playwright-mcp
+codex mcp add stealth -- invisible-playwright-mcp
 ```
 
 **Gemini CLI:**
 
 ```bash
-gemini mcp add --scope user stealth uvx invisible-playwright-mcp
+gemini mcp add --scope user stealth invisible-playwright-mcp
 ```
 
 Then ask your assistant, in the window you already have open:
@@ -84,7 +73,8 @@ We bring the interface, you bring an [OpenRouter](https://openrouter.ai) key.
 Chat on the left, the live browser on the right.
 
 ```bash
-uvx aihawk ui --openrouter-key sk-or-...
+pip install aihawk
+aihawk ui --openrouter-key sk-or-...
 ```
 
 Then open **http://127.0.0.1:8765** and type the same thing.
@@ -100,11 +90,6 @@ over MCP, exactly as your assistant would.
 (x86_64 or arm64)**. macOS is not supported, and that is the browser's limit
 rather than a packaging gap: the last macOS engine build was `firefox-20`.
 
-**If `uv --version` still says "not found"** after installing, the terminal you
-are in was open before the installer touched your PATH. Open a completely fresh
-one on Windows, or run `source ~/.bashrc` on Linux. If you already have Python
-and pip, `pip install uv` does the same job and skips the installer entirely.
-
 **Download the browser before your first task.** AIHawk drives a patched
 Firefox that is not inside the package: about 250 MB, and it downloads on the
 first instruction that needs a page. That makes your first instruction sit
@@ -112,11 +97,25 @@ there for a long time, and on a slow connection it can fail with an error that
 never mentions a download. Get it out of the way now, where you can watch it:
 
 ```bash
-uvx invisible-playwright fetch
+invisible-playwright fetch
 ```
 
 It prints the path to the browser when it finishes, and it is safe to run
 again: if the engine is already there it says so and downloads nothing.
+
+**If your assistant reports that it cannot find the command**, pip put the
+script somewhere that is not on your PATH. Register the module form instead,
+which does not depend on PATH at all:
+
+```bash
+claude mcp add --scope user stealth -- python -m invisible_playwright_mcp
+```
+
+**If you would rather install nothing permanently**, [uv](https://docs.astral.sh/uv/)
+runs both from a throwaway environment: `uvx invisible-playwright-mcp` in the
+registration above, and `uvx aihawk ui --openrouter-key sk-or-...` for the
+interface. Same code either way; pip is the shorter path when Python is
+already there.
 
 ---
 
