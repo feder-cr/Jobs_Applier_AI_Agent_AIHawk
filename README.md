@@ -20,11 +20,11 @@
 
 ---
 
-## Two ways to use it
+## Two ways to use this browser agent
 
 The only question is where the model comes from.
 
-### 1. You already use an assistant that can run tools
+### 1. From your assistant, over MCP
 
 Your assistant brings the model. You add this browser to it, and nothing changes
 about how you work.
@@ -56,7 +56,7 @@ instead, and the file is not the same shape for all of them. Each one is
 written out in the
 [server's README](https://github.com/feder-cr/invisible-playwright-mcp#adding-it-to-your-client).
 
-### 2. You don't, or you want to watch it work
+### 2. Standalone: the web UI
 
 We bring the interface, you bring an [OpenRouter](https://openrouter.ai) key.
 Chat on the left, the live browser on the right.
@@ -96,10 +96,10 @@ uvx invisible-playwright fetch
 
 ---
 
-## What to ask it
+## What to ask a web browsing agent
 
-Anything that needs a browser rather than an API, and a person's judgement about
-what is on the page.
+Anything that needs real web automation: a browser rather than an API, and a
+person's judgement about what is on the page.
 
 > Go to `<paste the URL>`. One way, Milan to Lisbon, economy, one checked bag,
 > one adult. Check every date from the 12th to the 16th of next month, one at a
@@ -111,7 +111,7 @@ It drives the page the way a person would: the pointer moves, keys are pressed,
 and it refuses to set a form field from JavaScript even when that would be
 quicker, because a page can tell the difference.
 
-## Options
+## Options: proxy, profile, seed
 
 - **`--openrouter-key`** Your key, or the `OPENROUTER_API_KEY` variable.
 - **`--model`** An OpenRouter model id, or `AIHAWK_MODEL`. Defaults to `z-ai/glm-4.6`.
@@ -153,17 +153,18 @@ second name goes too.
 [`tests/test_key_isolation.py`](https://github.com/feder-cr/AIHawk/blob/main/tests/test_key_isolation.py)
 fails if that stops being true.
 
-## The wiki
+## The wiki: AI browser-agent guides
 
 The reading room around the agent lives in the
 [wiki](https://github.com/feder-cr/AIHawk/wiki): the
-[AI browser-agent landscape and its comparisons](https://github.com/feder-cr/AIHawk/wiki/guides-alternatives-and-comparisons),
+[AI browser-agent landscape: browser-use, Operator-style and
+computer-use agents compared](https://github.com/feder-cr/AIHawk/wiki/guides-alternatives-and-comparisons),
 [what to check when an agent gets blocked](https://github.com/feder-cr/AIHawk/wiki/why-does-my-ai-agent-get-blocked),
 and [what happened to OpenAI Operator](https://github.com/feder-cr/AIHawk/wiki/is-openai-operator-still-available),
 among others. Worked examples, transcripts and their outputs live in
 [articles/](https://github.com/feder-cr/AIHawk/tree/main/articles).
 
-## The rest of the family
+## The rest of the family: browser MCP server, engine, core
 
 - **[invisible-playwright-mcp](https://github.com/feder-cr/invisible-playwright-mcp)**
   The MCP server from option 1. Tools only, no interface.
