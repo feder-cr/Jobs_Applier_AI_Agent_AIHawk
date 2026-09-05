@@ -725,6 +725,10 @@ def build_app(link: Link, service: ChatService) -> Starlette:
 
     async def events(_request: Request) -> StreamingResponse:
         q = service.subscribe()
+        # Freeze the replay/live boundary while subscribing. StreamingResponse
+        # starts `stream` later, so taking this snapshot inside it would let an
+        # intervening event appear in both history and the listener's queue.
+        replay = list(service.history)
 
         async def stream() -> AsyncIterator[bytes]:
             try:
@@ -733,7 +737,7 @@ def build_app(link: Link, service: ChatService) -> Starlette:
                 # Flagged as replay so the page does not animate forty rows at
                 # once and does not start a stopwatch on work that finished
                 # before this listener existed.
-                for past in list(service.history):
+                for past in replay:
                     yield b"data: " + json.dumps({**past, "replay": True}).encode() + b"\n\n"
                 while True:
                     event = await q.get()
