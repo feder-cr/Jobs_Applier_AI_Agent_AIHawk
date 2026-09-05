@@ -20,9 +20,31 @@
 
 ---
 
+## First, install uv
+
+Both ways below start with `uvx`, which comes with
+[uv](https://docs.astral.sh/uv/). One line, once. **Windows**, in PowerShell:
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+**Linux:**
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Then **open a new terminal** and run `uv --version`. A number means you are
+ready; anything else, see [setup details](#setup-details).
+
+---
+
 ## Two ways to use this browser agent
 
-The only question is where the model comes from.
+The only question is where the model comes from. If you already use Claude
+Code, Codex or Gemini CLI, take the first: no new account, your assistant
+already has the model. If you do not, take the second.
 
 ### 1. From your assistant, over MCP
 
@@ -72,27 +94,29 @@ over MCP, exactly as your assistant would.
 
 ---
 
-## Before either one
+## Setup details
 
-**Python 3.11 or newer**, on **Windows (x86_64)** or **Linux (x86_64, arm64)**.
-macOS is not supported: the last engine build for it was `firefox-20`.
+**What you need:** Python 3.11 or newer, on **Windows (x86_64)** or **Linux
+(x86_64 or arm64)**. macOS is not supported, and that is the browser's limit
+rather than a packaging gap: the last macOS engine build was `firefox-20`.
 
-Both commands above start with `uvx`, so you need [uv](https://docs.astral.sh/uv/):
+**If `uv --version` still says "not found"** after installing, the terminal you
+are in was open before the installer touched your PATH. Open a completely fresh
+one on Windows, or run `source ~/.bashrc` on Linux. If you already have Python
+and pip, `pip install uv` does the same job and skips the installer entirely.
 
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh              # Linux
-powershell -c "irm https://astral.sh/uv/install.ps1 | iex"   # Windows
-```
-
-**The browser is a separate download of about a quarter of a gigabyte**, and it
-does not arrive when you install either side. It arrives on the first request
-that needs a page, so your first instruction sits there for a while and a slow
-connection can time out with an error that says nothing about a download. Get it
-over with first, where you can watch it:
+**Download the browser before your first task.** AIHawk drives a patched
+Firefox that is not inside the package: about 250 MB, and it downloads on the
+first instruction that needs a page. That makes your first instruction sit
+there for a long time, and on a slow connection it can fail with an error that
+never mentions a download. Get it out of the way now, where you can watch it:
 
 ```bash
 uvx invisible-playwright fetch
 ```
+
+It prints the path to the browser when it finishes, and it is safe to run
+again: if the engine is already there it says so and downloads nothing.
 
 ---
 
