@@ -1,12 +1,12 @@
 ---
-title: "Run an AI browser agent with a local LLM"
+title: "AI browser agent with a local LLM: what changes"
 description: "AIHawk's interface only calls OpenRouter. How to attach this browser to a client running a local model, and why privacy, not capability, is the real payoff."
 parent: "Using the Agent"
 nav_order: 25
 ---
 
 
-# Run an AI browser agent with a local LLM
+# AI browser agent with a local LLM: what changes
 
 A local model changes exactly one thing about this browser: where the model runs.
 AIHawk's own interface only ever calls OpenRouter, there is no local-model flag. To
@@ -129,7 +129,7 @@ reliably here.
 step with no model against the library: if it reproduces, the browser side is at
 fault regardless of any model; if not, the model was the variable.
 
-**See also:** [Which model to use with AIHawk](which-model-to-use-with-aihawk.md),
+**See also:** [running an agent unattended on a schedule](run-ai-agent-on-a-schedule.md) for the other half of the running question, [Which model to use with AIHawk](which-model-to-use-with-aihawk.md),
 [Browser problem or model problem?](browser-problem-or-model-problem.md), and
 [Running AIHawk's browser from Claude Code](running-aihawk-with-claude-code.md).
 
